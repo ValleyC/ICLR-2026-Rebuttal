@@ -468,12 +468,13 @@ E.6 Training Configuration \dotfill \pageref{subsec:training_config}
 \begin{quote}
 \noindent F.1 Solver Evaluation on TSP-500 \dotfill \pageref{subsec:solver_eval}\\
 F.2 TSP-10000 Results \dotfill \pageref{subsec:tsp10000}\\
-F.3 TSPLIB Results \dotfill \pageref{subsec:TSPLIB}\\
-F.4 Noise Schedule Design for TSP Diffusion \dotfill \pageref{subsec:noise-schedule-experiment}\\
-F.5 Evaluation on Adaptive Mixing Parameters \dotfill \pageref{subsec:adaptivemixing}\\
-F.6 Evaluation on Architectural Hyperparameters \dotfill \pageref{subsec:archi_hyperparameters}\\
-F.7 Model Efficiency \dotfill \pageref{subsec:model_efficiency}\\
-F.8 Visualization of EDISCO's E(2)-Equivariance \dotfill \pageref{subsec:visualization}
+{\color{blue}F.3 Cross-Distribution Generalization \dotfill \pageref{subsec:ood_generalization}}\\
+F.4 TSPLIB Results \dotfill \pageref{subsec:TSPLIB}\\
+F.5 Noise Schedule Design for TSP Diffusion \dotfill \pageref{subsec:noise-schedule-experiment}\\
+F.6 Evaluation on Adaptive Mixing Parameters \dotfill \pageref{subsec:adaptivemixing}\\
+F.7 Evaluation on Architectural Hyperparameters \dotfill \pageref{subsec:archi_hyperparameters}\\
+F.8 Model Efficiency \dotfill \pageref{subsec:model_efficiency}\\
+F.9 Visualization of EDISCO's E(2)-Equivariance \dotfill \pageref{subsec:visualization}
 \end{quote}
 \vspace{0.5em}
 \noindent\rule{\textwidth}{0.4pt}
@@ -1017,7 +1018,7 @@ LKH-3 (less trials)~\citep{helsgaun2017extension} & Heuristics & 71.79 & 0.03\% 
 Farthest Insertion & Heuristics & 80.59 & 12.36\% & 13.25m \\
 \midrule
 AM~\citep{kool2019attention} & RL+G & 141.51 & 97.17\% & 7.68m \\
-GLOP~\citep{corsini2023glop} & RL+G & 75.29 & 4.90\% & 1.90m \\
+GLOP~\citep{ye2024glop} & RL+G & 75.29 & 4.90\% & 1.90m \\
 DIMES~\citep{qiu2022dimes} & RL+AS+G & 80.45 & 12.09\% & 3.07h \\
 DIFUSCO~\citep{sun2023difusco} & SL+G & 78.35 & 8.95\% & 28.51m \\
 T2T~\citep{li2023t2t} & SL+G & 73.87 & 2.92\% & 1.52h \\
@@ -1028,7 +1029,7 @@ DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 73.99 & 3.10\% & 35.38m \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{72.87} & \textbf{1.53\%} & 12.72m \\
 \midrule
 AM~\citep{kool2019attention} & RL+BS & 129.40 & 80.28\% & 1.81h \\
-GLOP~\citep{corsini2023glop} & RL+S & 75.27 & 4.88\% & 5.96m \\
+GLOP~\citep{ye2024glop} & RL+S & 75.27 & 4.88\% & 5.96m \\
 DIFUSCO~\citep{sun2023difusco} & SL+S & 95.52 & 33.09\% & 6.59h \\
 T2T~\citep{li2023t2t} & SL+S & 73.81 & 2.84\% & 2.47h \\
 DISCO~\citep{zhao2024disco} & SL+S & 73.81 & 2.84\% & 48.77m \\
@@ -1045,6 +1046,58 @@ DISCO~\citep{zhao2024disco} & SL+GS+MCTS & 73.69 & 2.68\% & 2.1h \\
 Table~\ref{tab:tsp10000_results} presents results on the challenging TSP-10000 benchmark, demonstrating EDISCO's scalability to very large problem instances. With greedy decoding, EDISCO achieves a 1.98\% optimality gap in 12.18 minutes, significantly outperforming DIFUSCO (8.95\%, 28.51m) and surpassing both T2T (2.92\%, 1.52h) and DISCO (2.90\%, 1.52h) while being 7.5× faster than T2T.
 
 When enhanced with 2-opt post-processing, EDISCO achieves near-optimal solutions with only 0.51\% gap in 12.72 minutes. Under the sampling-based decoding, EDISCO achieves a 1.79\% gap compared to DIFUSCO's 33.09\% and matches the performance of T2T and DISCO (2.84\%) while being 3.8× faster than T2T. With sampling plus 2-opt, EDISCO reaches an exceptional 0.20\% gap in 39.28 minutes, compared to DIFUSCO's 4.03\% in 6.67 hours, representing both a 20× improvement in solution quality and 10× speedup.
+
+{\color{blue}
+\subsection{Cross-Distribution Generalization}
+\label{subsec:ood_generalization}
+
+To evaluate EDISCO's robustness to distribution shift, we conduct comprehensive out-of-distribution (OOD) experiments following the protocol established by \citet{bi2022learning} and evaluated in GLOP \citep{ye2024glop}. We evaluate EDISCO on four standard OOD distributions: Uniform (in-distribution baseline), Cluster, Explosion, and Implosion. Following \citet{bi2022learning}, we generate 10,000 test instances per distribution using LKH-3 for optimal solutions. To provide comprehensive comparison with diffusion-based methods, we evaluate DIFUSCO~\citep{sun2023difusco}, T2T~\citep{li2023t2t}, and Fast-T2T~\citep{li2024fastt2t} using their publicly available pretrained checkpoints on our generated OOD datasets, enabling fair comparison under identical evaluation settings. Notice that all the methods evaluated are only trained on uniform datasets.
+
+Table~\ref{tab:ood_results} presents the cross-distribution evaluation results. We report the optimality gap and deterioration metric, defined as $\text{Det}(\%) = (\text{Gap}_{\text{OoD}} / \text{Gap}_{\text{Uniform}} - 1) \times 100$, which measures the relative performance degradation on OOD data. The table compares three categories of methods: RL-based approaches (AM, AM+HAC, AMDKD+EAS) from \citet{bi2022learning}, diffusion-based methods without equivariance (DIFUSCO, T2T, Fast-T2T, GLOP), and EDISCO as the only E(2)-equivariant diffusion model.
+
+EDISCO achieves an average deterioration of 4.2\%, outperforming GLOP (15.0\%), DIFUSCO (132.7\%), T2T (687.0\%), and Fast-T2T (1960.6\%). On the uniform distribution, EDISCO achieves 0.040\% gap, maintaining similarly low gaps on OOD distributions: 0.050\% on Cluster, 0.030\% on Explosion, and 0.045\% on Implosion. The average gap across all distributions is 0.041\%, compared to 0.101\% for GLOP, 1.108\% for T2T, 2.015\% for DIFUSCO, and 0.942\% for Fast-T2T.
+
+The deterioration metrics reveal significant differences in OOD robustness across methods. DIFUSCO shows substantial gaps on Cluster (2.87\%, 184.2\% deterioration) and Implosion (2.80\%, 177.2\% deterioration) compared to its uniform performance (1.01\%). T2T achieves 0.18\% on uniform but degrades to 1.50\% on Cluster (733.3\% deterioration) and 2.60\% on Implosion (1344.4\% deterioration). Fast-T2T exhibits even larger deterioration: 1866.7\% on Cluster (1.180\% gap) and 4066.7\% on Implosion (2.500\% gap) from a uniform baseline of 0.060\%. In contrast, EDISCO maintains gaps below 0.050\% on all OOD distributions, with deterioration ranging from -25.0\% (Explosion) to 25.0\% (Cluster).
+
+EDISCO achieves negative deterioration on the Explosion distribution (-25.0\%), indicating better performance on this OOD pattern than on the uniform training distribution. Comparing EDISCO with non-equivariant diffusion methods (DIFUSCO, T2T, Fast-T2T) under identical evaluation settings demonstrates that incorporating E(2)-equivariance into diffusion models improves cross-distribution robustness.
+
+Figure~\ref{fig:ood_visualization} visualizes the final tour solutions generated by EDISCO on representative instances from each distribution, demonstrating consistent high-quality solutions across diverse spatial patterns.
+
+\begin{table}[t]
+\color{blue}
+\centering
+\caption{Cross-distribution generalization on TSP-100 following the evaluation protocol from \citet{bi2022learning} and \citet{ye2024glop}. All models trained on Uniform distribution only. Det.(\%): Deterioration = (Gap$_{\text{OoD}}$ / Gap$_{\text{Uniform}}$ - 1) $\times$ 100. Bold indicates best performance, underlined indicates second-best. RL-based baseline results from \citet{bi2022learning}. Diffusion-based methods (DIFUSCO, T2T, Fast-T2T) evaluated using pretrained checkpoints on our generated OOD datasets.}
+\label{tab:ood_results}
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{lccccccccc}
+\toprule
+\multirow{2}{*}{\textbf{Method}} & \textbf{Uniform} & \multicolumn{2}{c}{\textbf{Cluster}} & \multicolumn{2}{c}{\textbf{Explosion}} & \multicolumn{2}{c}{\textbf{Implosion}} & \multicolumn{2}{c}{\textbf{Average}} \\
+\cmidrule(lr){2-2} \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10}
+& Gap(\%)$\downarrow$ & Gap(\%)$\downarrow$ & Det.(\%)$\downarrow$ & Gap(\%)$\downarrow$ & Det.(\%)$\downarrow$ & Gap(\%)$\downarrow$ & Det.(\%)$\downarrow$ & Gap(\%)$\downarrow$ & Det.(\%)$\downarrow$ \\
+\midrule
+AM~\citep{kool2019attention} & 2.310 & 17.97 & 678 & 3.817 & 65.2 & 2.431 & 5.2 & 6.632 & 249 \\
+AM+HAC & 2.484 & 3.997 & \underline{60.9} & 3.084 & 24.1 & 2.595 & 4.5 & 3.040 & 29.8 \\
+AMDKD+EAS~\citep{bi2022learning} & 0.078 & \underline{0.165} & 111.5 & 0.048 & \underline{-38.5} & \underline{0.079} & \underline{1.3} & \underline{0.092} & 24.8 \\
+\midrule
+DIFUSCO~\citep{sun2023difusco} & 1.01 & 2.87 & 184.2 & 1.38 & 36.6 & 2.80 & 177.2 & 2.015 & 132.7 \\
+T2T~\citep{li2023t2t} & 0.18 & 1.50 & 733.3 & 0.15 & -16.7 & 2.60 & 1344.4 & 1.108 & 687.0 \\
+Fast-T2T~\citep{li2024fastt2t} & \underline{0.060} & 1.180 & 1866.7 & \textbf{0.029} & \textbf{-51.7} & 2.500 & 4066.7 & 0.942 & 1960.6 \\
+GLOP~\citep{ye2024glop} & 0.091 & 0.166 & 82.4 & 0.066 & -27.5 & 0.082 & \textbf{-9.9} & 0.101 & \underline{15.0} \\
+\midrule
+\textbf{EDISCO with 50-step PNDM (ours)} & \textbf{0.040} & \textbf{0.050} & \textbf{25.0} & \underline{0.030} & -25.0 & \textbf{0.045} & 12.5 & \textbf{0.041} & \textbf{4.2} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\begin{figure}[h]
+\color{blue}
+\centering
+\includegraphics[width=0.95\textwidth]{graphs/edisco_ood_tsp.pdf}
+\caption{Visualization of EDISCO-generated tours on four standard OOD distributions for TSP-100.}
+\label{fig:ood_visualization}
+\end{figure}
+}
 
 \subsection{TSPLIB Results}
 \label{subsec:TSPLIB}
