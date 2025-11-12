@@ -1,0 +1,1376 @@
+
+\documentclass{article} % For LaTeX2e
+\usepackage{iclr2026_conference,times}
+
+% Optional math commands from https://github.com/goodfeli/dlbook_notation.
+\input{math_commands.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+
+\usepackage{diagbox}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{adjustbox}
+\usepackage{dsfont}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{wrapfig}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\title{EDISCO: \underline{E}quivariant Continuous-Time \\Categorical \underline{Di}ffu\underline{s}ion for \\Geometric \underline{C}ombinatorial \underline{O}ptimization}
+
+
+% Authors must not appear in the submitted version. They should be hidden
+% as long as the \iclrfinalcopy macro remains commented out below.
+% Non-anonymous submissions will be rejected without review.
+
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to \LaTeX{} to determine where to break
+% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
+% puts 3 of 4 authors names on the first line, and the last on the second
+% line, try using \AND instead of \And before the third author name.
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+% \iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+Geometric combinatorial optimization problems, such as the Traveling Salesman Problem (TSP), possess inherent symmetries under rotations, translations, and reflections in Euclidean space. These transformations are denoted as E(2). However, existing neural network-based approaches, including recent diffusion-based solvers, fail to exploit these geometric features. This paper presents EDISCO, to the best of our knowledge, the first diffusion-based framework combining E(2)-equivariant graph neural networks with continuous-time categorical diffusion models for solving geometric combinatorial problems. This approach introduces an equivariant score network that respects geometric transformations while operating on discrete edge variables, together with a continuous-time categorical diffusion process that maintains E(2) symmetries throughout the forward and reverse processes. By incorporating geometric awareness directly into the diffusion process, EDISCO achieves notable improvements over the baseline. EDISCO reduces the state-of-the-art TSP optimality gaps on TSP-500 from 0.12\% to 0.08\%, TSP-1000 from 0.30\% to 0.22\%, and TSP-10000 from 2.68\% to 1.20\%. EDISCO demonstrates strong generalizability across problem sizes and also shows remarkable efficiency, requiring only 33\% to 50\% of the training data compared to competing diffusion methods across all problem scales.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:intro}
+
+With diverse applications in logistics, circuit design, and resource allocation, geometric combinatorial optimization problems (GCOPs), such as the Traveling Salesman Problem (TSP), remain a fundamental challenge in combinatorial optimization. Despite decades of research on exact and heuristic solvers~\citep{applegate2006concorde,helsgaun2017extension}, the development of learning-based approaches has recently become the focus because of their potential for rapid inference and generalization across various problem instances~\citep{kool2019attention,joshi2022learning,fu2021generalize}. Recent breakthroughs in diffusion models have opened new directions for solving GCOPs~\citep{graikos2022diffusion,sun2023difusco,zhao2024disco}. DIFUSCO~\citep{sun2023difusco} demonstrated graph-based diffusion for TSP, while DISCO~\citep{zhao2024disco} introduced residue-constrained generation and analytical denoising to achieve up to 5.28× speedup over previous diffusion approaches.
+
+However, an important observation is that TSP and similar GCOPs possess natural symmetries. The solutions to these problems remain invariant under transformations in 2D Euclidean space, including translations, rotations, and reflections~\citep{ouyang2021generalization,bronstein2021geometric}. Such transformations are denoted as E(2). However, most existing neural network-based approaches fail to capture the geometric structure of TSP. These methods require massive amounts of training data and depend on high-quality optimal or near-optimal solutions for supervision, which are computationally expensive to obtain for large problems~\citep{kool2019attention,kwon2020pomo,joshi2022learning}. Furthermore, these models face significant memory and computational constraints. Even moderate-scale problems cause memory overflow and require extensive training times~\citep{bresson2021transformer,xin2021multi,fu2021generalize}. This inefficiency originates from their need to learn geometric invariances from scratch. Non-equivariant models attempt to address this issue with data augmentation, but this only shifts the problem. They require more training samples and still cannot ensure exact equivariance, especially on out-of-distribution data~\citep{nordenfors2023optimization,esteves2018learning}. In contrast, models that explicitly incorporate geometric structure through equivariant architectures achieve better performance with less training data and smaller model sizes~\citep{brehmer2024does,satorras2021en,batzner2022e3equivariant}.
+
+In addition to the geometric considerations, the choice of diffusion formulation presents another crucial design decision. While discrete diffusion models have shown promise for combinatorial problems~\citep{sun2023difusco,austin2021structured}, existing approaches employ discrete-time formulations with certain limitations. Although methods like DDIM~\citep{song2021denoising} allow variable step counts at inference, they still rely on fixed discretization schemes that may accumulate approximation errors~\citep{zhang2022fast,lu2022dpm,ren2025fast}. The discrete-time framework also limits access to adaptive numerical solvers that could dynamically adjust computational effort based on local dynamics~\citep{ren2025fast,zhang2024convergence}. Continuous-time formulations fundamentally address these limitations by treating the diffusion as a continuous process governed by stochastic differential equations (SDEs). This enables the use of numerical solvers with adaptive step sizes and higher-order integration methods that can achieve better accuracy with fewer number of function evaluations (NFEs)~\citep{song2021denoising,sun2023score}.
+
+In this work, we propose EDISCO, which leverages an Equivariant Graph Neural Network (EGNN) architecture to respect the geometric symmetries inherent in TSP instances. We also formulate the edge selection process as a continuous-time diffusion over discrete variables, enabling the derivation of analytical expressions for both the forward corruption process and the reverse denoising process, resulting in accelerated inference.
+
+The novel contributions are as follows:
+\begin{enumerate}
+\item We introduce, to the best of our knowledge, the first continuous-time discrete diffusion model with built-in geometric equivariance for combinatorial optimization. Preserving problem symmetries improves both sample efficiency and solution quality.
+
+\item We develop efficient training and sampling algorithms that leverage the analytical tractability of Continuous-time Markov Chains (CTMCs), compatible with higher-order accelerated solvers. These solvers achieve 2-3× speedups with better quality or up to 25× speedups for real-time applications compared to discrete-time methods.
+
+\item The state-of-the-art performance is exceeded on TSP benchmarks (50-10000 cities). The optimality gap is reduced from 0.12\% to 0.08\% for TSP-500, from 0.30\% to 0.22\% for TSP-1000, and from 2.68\% to 1.20\% for TSP-10000. It only requires 33\% to 50\% of the training data compared to competing diffusion methods across all problem scales. 
+
+\item EDISCO is extended to solve real-world TSP problems and the Capacitated Vehicle Routing Problem (CVRP), outperforming SOTA approaches. These results validate the generalizability of EDISCO, indicating that it can be effectively applied to other GCOPs.
+\end{enumerate}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews related work on neural combinatorial optimization and diffusion models. Section~\ref{sec:method} presents the continuous-time diffusion framework and the EGNN architecture. Section~\ref{sec:experiments} presents comprehensive experimental results. Section~\ref{sec:discussion} concludes with discussions and future directions.
+
+% ============ RELATED WORK SECTION ============
+% Insert this into your main document in place of the empty Section 2
+
+\section{Related Work}
+\label{sec:related}
+\subsection{Neural Network-Based TSP Solvers}
+Neural network-based approaches for TSP have recently become mainstream due to their potential for rapid inference, generalization across problem instances, and ability to learn from data without hand-crafted heuristics~\citep{kool2019attention,joshi2022learning,fu2021generalize}. These approaches can be divided into autoregressive and non-autoregressive models. Autoregressive models~\citep{kool2019attention,kwon2020pomo} construct solutions sequentially but require extensive training data and struggle with generalization~\citep{joshi2022learning}. Non-autoregressive approaches generate complete solutions simultaneously, evolving from limited heatmap representations~\citep{joshi2019efficient} to expressive diffusion models~\citep{sun2023difusco,li2023t2t,yoon2024cado,zhao2024disco}.
+
+Among diffusion approaches, DIFUSCO~\citep{sun2023difusco} pioneered graph-based diffusion for TSP, DISCO~\citep{zhao2024disco} achieved 5.28× speedup through residue-constrained generation, and T2T~\citep{li2023t2t} improved quality via gradient-based search. CADO~\citep{yoon2024cado} combines enhanced DIFUSCO by combining RL fine-tuning, but requires high-quality supervised data and expensive RL fine-tuning. The key insight is that all existing diffusion TSP solvers use discrete-time diffusion formulations and ignore TSP's geometric structure.
+
+\subsection{Geometric Deep Learning and Equivariance}
+Geometric deep learning leverages symmetries to improve efficiency and generalization~\citep{bronstein2021geometric}. Equivariant neural networks ensure outputs transform consistently with symmetric inputs, reducing sample complexity~\citep{cohen2016group}. E(2)-equivariant models significantly improve TSP generalization~\citep{ouyang2021generalization}, and geometric GNNs outperform standard architectures for TSP tasks~\citep{song2025geometrically}. Theory confirms that equivariant models reduce training data requirements~\citep{brehmer2024does}. Despite this evidence, most neural network-based TSP solvers lack geometric awareness. While Sym-NCO~\citep{kim2022symnco} uses regularizer-based symmetry learning, it doesn't achieve exact equivariance. These gaps motivate our approach as the first to combine exact E(2)-equivariance with diffusion.
+
+\subsection{Continuous-Time Diffusion Formulations}
+Continuous-time formulations resolve fundamental limitations of discrete-time diffusion. CTMCs for discrete diffusion denoising~\citep{campbell2022continuous} enable analytical transition probabilities and flexible inference without retraining. Score-based continuous-time discrete diffusion~\citep{sun2023scorebased} provides better convergence properties and allows the use of higher-order integration methods that significantly reduce the number of neural network evaluations~\citep{song2021scorebased}. Though DiffUCO~\citep{sanokowski2024diffusion} applies continuous-time to unsupervised combinatorial optimization, it lacks geometric considerations and does not show results on large-scale geometric problems. DISCO~\citep{zhao2024disco} also achieves fast inference (1-2 steps) by replacing the entire numerical integration process with an analytically solvable form through decoupled diffusion models (DDMs). This analytical solution completely bypasses the need for numerical ODE solvers but requires problem-specific residue constraints and sacrifices flexibility in the diffusion process.
+
+% ============ METHOD SECTION ============
+% Insert this into your main document in place of the empty Section 3
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Problem Formulation}
+GCOPs in Euclidean space are defined on a set of $n$ nodes $\mathcal{V}$ with coordinates $\{\mathbf{c}_i\}_{i=1}^n$, $\mathbf{c}_i \in \mathbb{R}^d$. The objective is to select a subset of edges or configurations, represented by a decision matrix $\mathbf{X} \in \{0,1\}^{n \times n}$, that minimizes a distance-based cost function while satisfying problem-specific constraints. The objective is:
+\begin{equation}
+    \mathbf{X}^* = \arg\min_{\mathbf{X}} f(\mathbf{X}, \{\mathbf{c}_i\}_{i=1}^n) \quad \text{s.t. } \mathbf{X} \in \mathcal{C}
+\end{equation}
+where $f$ is a distance-based cost function and $\mathcal{C}$ represents the constraint.
+
+In the case of TSP, given $n$ cities with coordinates $\mathbf{c}_i \in \mathbb{R}^2$, we need to find a binary adjacency matrix $\mathbf{X} \in \{0,1\}^{n \times n}$ where $X_{ij} = 1$ if edge $(i,j)$ is included in the tour. The tour constraints are: each city has degree 2, and the selected edges form a connected cycle. We formulate this as a generative modeling problem~\cite{sun2023difusco,li2023t2t}, learning the conditional distribution $p(\mathbf{X}|\{\mathbf{c}_i\}_{i=1}^n)$.
+
+\subsection{Continuous-Time Categorical Diffusion Framework}
+
+Unlike continuous diffusion models that operate in Euclidean space and require post-hoc quantization, categorical diffusion directly models discrete decisions in their native space~\citep{austin2021structured}. This design choice eliminates quantization errors and ensures the model learns the true discrete distribution rather than a continuous approximation. DIFUSCO~\citep{sun2023difusco} also demonstrated that categorical diffusion consistently outperforms continuous diffusion on TSP over all problem sizes.
+
+Additionally, the continuous-time formulation offers extra benefits over discrete-time diffusion, as it enables exact likelihood computation, allows for flexible inference schedules without requiring retraining, and provides better theoretical guarantees for convergence~\citep{campbell2022continuous}.
+
+\paragraph{Forward Process}
+The forward process defines how clean data $\mathbf{X}_0$ progressively transitions to noise through a continuous-time Markov chain (CTMC). For K-state categorical variables, the instantaneous rate of transition between states is governed by the rate matrix~\citep{campbell2022continuous}:
+\begin{equation}
+    \mathbf{Q}(t) = \beta(t) \left(\frac{1}{K}\mathds{1}\mathds{1}^T - \mathbf{I}\right)\label{eq:rate_matrix}
+\end{equation}
+where $\beta(t) = \beta_{\min} + t(\beta_{\max} - \beta_{\min})$ is a linear noise schedule with $t \in [0,1]$. We set $\beta_{\min} = 0.1$ and $\beta_{\max} = 1.5$.
+
+The transition probability from time $s$ to $t$ is obtained by solving the Kolmogorov forward equation~\citep{norris1997markov}, yielding the closed-form solution~\citep{campbell2022continuous}:
+\begin{equation}
+    P_{ij}(t|s) = \frac{1}{K} + \left(\delta_{ij} - \frac{1}{K}\right) \exp\left(-K \int_s^t \beta(u) du\right)
+    \label{eq:transition_prob}
+\end{equation}
+
+For TSP with binary edge selection (K=2), this allows us to directly sample the noisy state $\mathbf{X}_t$ from the clean data $\mathbf{X}_0$:
+\begin{equation}
+    P(\mathbf{X}_t = j | \mathbf{X}_0 = i) = P_{ij}(t|0) = \frac{1}{2} + \left(\delta_{ij} - \frac{1}{2}\right) \exp\left(-2 \int_0^t \beta(u) du\right)
+    \label{eq:forward_sampling}
+\end{equation}
+
+For our linear schedule, the integral evaluates analytically to:
+\begin{equation}
+    \int_0^t \beta(u) du = \beta_{\min}t + \frac{1}{2}(\beta_{\max} - \beta_{\min})t^2\label{eq:beta_integral}
+\end{equation}
+
+This closed-form expression enables exact sampling of $\mathbf{X}_t$ given $\mathbf{X}_0$ at any time $t$ without simulating intermediate states, crucial for efficient training. The exponential decay term ensures that as $t \to 1$, the transition probability approaches uniform ($P_{ij} \to 1/2$), completely corrupting the original signal while maintaining mathematical tractability.
+
+\paragraph{Reverse Process}
+The reverse process reconstructs clean data from noise by iteratively applying learned denoising steps. The key insight is that while the forward process is fixed and tractable, the reverse process requires learning the score function, which is the gradient of the log probability density. Using Bayes' rule, the posterior distribution for the reverse transition is:
+\begin{equation}
+    q(\mathbf{X}_{t-\Delta t}|\mathbf{X}_t, \mathbf{X}_0) = \frac{q(\mathbf{X}_t|\mathbf{X}_{t-\Delta t}, \mathbf{X}_0) q(\mathbf{X}_{t-\Delta t}|\mathbf{X}_0)}{q(\mathbf{X}_t|\mathbf{X}_0)}
+    \label{eq:posterior_bayes}
+\end{equation}
+
+Since the true $\mathbf{X}_0$ is unknown during inference, we need a neural network $s_\theta(\mathbf{X}_t, t, \{\mathbf{c}_i\})$ to predict it when given the noisy state and time. This parameterization, known as $x_0$-prediction, is more stable than alternative parameterizations like noise prediction, especially in the low-noise region where reconstruction accuracy is significant~\citep{salimans2022progressive}.
+
+In EDISCO, we use an adaptive mixing strategy that dynamically balances between diffusion-based transitions and direct model predictions:
+\begin{equation}
+    p_{\text{reverse}} = w(t) \cdot p_{\text{diffusion}} + (1 - w(t)) \cdot p_{\text{predicted}}
+    \label{eq:adaptive_mixing}
+\end{equation}
+where $w(t) = t$ linearly decreases from 1 to 0 as the reverse process progresses. This design is motivated by the observation that early in the reverse process (large $t$), the noisy state contains little information about the target, making the diffusion dynamics essential for exploration. As $t$ decreases and the signal emerges, direct predictions become increasingly reliable and should dominate to ensure precise reconstruction. For very small timesteps where $t < 0.1$ or $|\Delta t| < 0.02$, we switch entirely to deterministic transitions using the argmax of predicted probabilities. This strategy is evaluated in Appendix~\ref{subsec:adaptivemixing}.
+
+\subsection{Equivariant Graph Neural Network Architecture}
+
+\paragraph{Geometric Equivariance for TSP}
+TSP possesses an inherent geometric structure that should be preserved. The E(2) invariance of TSP solution has been recognized in prior work~\citep{ouyang2021generalization, kim2022symnco}. If $\mathbf{X}^*$ is optimal for cities $\{\mathbf{c}_i\}$, then $\mathbf{X}^*$ remains optimal for transformed cities $\{g(\mathbf{c}_i)\}$ where $g \in E(2)$ represents any combinations of rotations, reflections, and translations. Traditional neural networks would need to learn this invariance from data, requiring extensive data augmentation and larger model capacity. However, we build equivariance directly into the architecture of EDISCO, ensuring that geometric transformations of inputs produce corresponding transformations of internal representations, so that the output can be maintained invariant~\citep{thomas2018tensor}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{graphs/EGNN.pdf}
+    \vspace{-0.5cm}
+    \caption{EDISCO's EGNN Architecture Overview. EGNN layers process TSP instances while preserving $E(2)$ equivariance. The network outputs edge probabilities that remain invariant under geometric transformations.}
+    \label{fig:egnn-architecture}
+\end{figure}
+
+\paragraph{EGNN Layers with Stability Mechanisms}
+
+We adapt the E(n)-equivariant graph neural network~\citep{satorras2021en} with several crucial modifications for stable training on GCOPs. The architecture maintains three types of features: node features $\mathbf{h}_i$ encoding local city information, edge features $\mathbf{e}_{ij}$ representing pairwise relationships and tour decisions, and coordinate embeddings $\mathbf{x}_i$ that evolve during message passing to capture geometric features. Figure~\ref{fig:egnn-architecture} illustrates the EGNN architecture that maintains E(2)-equivariance throughout the message passing process. The architecture processes TSP instances through multiple layers that preserve geometric symmetries while learning to predict edge probabilities for tour construction.
+
+The message computation aggregates information from node pairs and their geometric relationship:
+\begin{equation}
+    \mathbf{m}_{ij}^{(\ell)} = \text{MLP}_m\left([\mathbf{h}_i^{(\ell)}, \mathbf{h}_j^{(\ell)}, \mathbf{e}_{ij}^{(\ell)}, \|\mathbf{x}_i^{(\ell)} - \mathbf{x}_j^{(\ell)}\|_2]\right)
+    \label{eq:message}
+\end{equation}
+The inclusion of pairwise distances as scalar features, which are invariant under E(2), allows the model to reason about geometric relationships without breaking equivariance.
+
+Coordinate updates must preserve equivariance, achieved through the constrained form:
+\begin{equation}
+    \Delta\mathbf{x}_i = \alpha \sum_{j \neq i} w_{ij} \cdot \frac{\mathbf{x}_j^{(\ell)} - \mathbf{x}_i^{(\ell)}}{\|\mathbf{x}_j^{(\ell)} - \mathbf{x}_i^{(\ell)}\|_2}
+    \label{eq:coord_update}
+\end{equation}
+where the weights $w_{ij} = \tanh(\text{MLP}_c(\mathbf{m}_{ij}^{(\ell)})/\tau)$ control the influence of each neighbor. The temperature parameter $\tau=10$ prevents saturation of the tanh function during early training when the MLP outputs may be large. The conservative step size $\alpha=0.1$ is critical: larger values lead to coordinate collapse, where all cities converge to a single point. However, smaller values limit the model's ability to learn useful geometric features. The normalization by distance ensures that the update magnitude is independent of the coordinate scale, therefore improving robustness. The selections of $\tau$ and $\alpha$ are extensively evaluated in Appendix~\ref{subsec:archi_hyperparameters}.
+
+Edge features are updated with explicit time conditioning:
+\begin{equation}
+    \mathbf{e}_{ij}^{(\ell+1)} = \text{LayerNorm}(\mathbf{e}_{ij}^{(\ell)} + \text{MLP}_e([\mathbf{e}_{ij}^{(\ell)}, \mathbf{m}_{ij}^{(\ell)}]) + \text{MLP}_t(\mathbf{t}_{\text{emb}}))
+    \label{eq:edge_update}
+\end{equation}
+
+The time embedding $\mathbf{t}_{\text{emb}}$ uses sinusoidal encoding~\citep{vaswani2017attention}. This enables the network to distinguish between fine-grained time differences near $t=0$ and coarser differences at high noise levels.
+
+Node features aggregate information from neighbors with gated attention:
+\begin{equation}
+    \mathbf{h}_i^{(\ell+1)} = \text{LayerNorm}(\mathbf{h}_i^{(\ell)} + \text{MLP}_h([\mathbf{h}_i^{(\ell)}, \sum_{j \neq i} \sigma(\mathbf{m}_{ij}^{(\ell)}) \odot \mathbf{h}_j^{(\ell)}]))
+    \label{eq:node_update}
+\end{equation}
+
+Through the EGNN layers, EDISCO maintains exact E(2)-equivariance throughout the entire diffusion process. This is crucial for TSP because it reduces the effective complexity of the function to be learned.  
+
+\begin{proposition}
+\label{prop:quotient_dimension}
+Let $X = \mathbb{R}^{2n}$ denote the space of ordered 2D coordinates for $n$ cities, and let $G = \mathrm{E}(2)$ be the Euclidean transformation group on $X$ by simultaneous rotation and translation of all city positions. Assume the transformation is free on the dataset (i.e., no non-trivial element $g \in G \setminus \{e\}$ fixes any configuration). Then:
+\begin{enumerate}
+    \item[(i)] The quotient space $X/G$ is a smooth manifold of dimension $2n - 3$.
+    \item[(ii)] Any $G$-equivariant function $F: X \to Y$ factors uniquely through the quotient as $F = \widetilde{F} \circ \pi$, where $\pi: X \to X/G$ is the canonical projection and $\widetilde{F}: X/G \to Y$ is a function on the quotient manifold.
+    \item[(iii)] Learning a $G$-equivariant function is equivalent to learning a function on the $(2n-3)$-dimensional manifold $X/G$ rather than on $\mathbb{R}^{2n}$.
+\end{enumerate}
+\end{proposition}
+
+All the details about the notations can be found in the \nameref{notations}. Although the dimension reduction from $2n$ to $2n-3$ appears modest, its impact on learning is substantial. Equivariance forces the model to operate on the \((2n-3)\)-dimensional orbit space instead of \(\mathbb{R}^{2n}\), which reduces the metric entropy and the effective hypothesis-class complexity. The sample complexity reduction scales as $(1/\varepsilon)^3$ in covering number bounds, where $\varepsilon$ is the desired approximation accuracy. We do not consider E(2) reflections because reflections are discrete transformations that do not further reduce the quotient dimension. For TSP, reflected tours are equivalent (same edges, only opposite tour sequence). The detailed proof of Proposition~\ref{prop:quotient_dimension} is given in Appendix~\ref{subsec:proposition}. We also prove that the E(2)-Equivariance is preserved during the entire diffusion process in Appendix~\ref{subsec:equivarince}.
+
+\subsection{Inference and Tour Decoding}
+
+\paragraph{Solver Selection}
+During inference, the continuous-time formulation allows for a flexible choice of accelerated and higher-order solvers without requiring retraining~\citep{campbell2022continuous}. We extensively evaluate different solvers in Appendix~\ref{subsec:solver_eval}.
+
+\paragraph{Tour Construction from Edge Probabilities }
+The diffusion model outputs a probability matrix $P \in [0,1]^{n \times n}$ where $P_{ij} = p(X_{ij}=1)$ represents the model's confidence that edge $(i,j)$ should be included in the optimal tour. Converting these soft probabilities to a valid discrete tour requires careful consideration of both model confidence and problem constraints.
+
+Following the greedy decoding strategy from~\citep{sun2023difusco}, we compute edge scores that balance model predictions with distance-based priors as $s_{ij} = (P_{ij} + P_{ji})/d_{ij}$, where the symmetrization $P_{ij} + P_{ji}$ accounts for TSP's undirected nature and $d_{ij}$ denotes the Euclidean distance between nodes $i$ and $j$.
+
+The greedy construction algorithm maintains feasibility throughout the process. Starting with an empty tour, edges are processed in descending score order. An edge $(i,j)$ is added if and only if both vertices have degree less than 2 (ensuring no city is visited more than twice) and adding the edge would not create a subtour (except for the final edge that completes the Hamiltonian cycle). Cycle detection is performed efficiently using a union-find data structure with path compression, achieving near-linear time complexity. The 2-opt local search~\citep{lin1973effective} post-processing can be optionally applied to improve the tour.
+
+% ============ REVISED EXPERIMENTS SECTION ============
+% Insert this into your main document in place of Section 4
+
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Setup}
+
+\paragraph{Datasets} We follow the standard TSP evaluation protocol from~\citet{kool2019attention}. Training instances are generated by sampling $n$ cities uniformly from the unit square $[0, 1]^2$. We used the Concorde exact solver~\citep{applegate2006concorde} to generate datasets for TSP-50 and TSP-100, and used the LKH-3~\citep{helsgaun2017extension} heuristic solver for TSP-500 and TSP-1000. For evaluation, we use the standard test sets from~\citet{kool2019attention} for TSP-50/100 and ~\citet{fu2021generalize} for TSP-500 and above. EDISCO only requires 33\% to 50\% of the training data compared to baseline methods across all problem scales, which is reported in Appendix~\ref{subsec:training_config}.
+
+\paragraph{Graph Representation} For TSP-50/100, we use dense adjacency matrices representing complete graphs. For better scalability and fair comparisons, we apply graph sparsification to TSP-500 and above following the configuration of~\citep{sun2023difusco}, with details displayed in Appendix~\ref{subsec:data_generation}.
+
+\paragraph{Evaluation Metrics} We report three primary metrics: (1) average tour length, (2) average optimality gap, and (3) total run time. More experiment details can be found in Appendix~\ref{subsec:performance_metrics}.
+
+\begin{table}[h]
+\centering
+\caption{Results on TSP-50 and TSP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy Decoding, 2O: 2-opt Post-processing. Concorde* represents the baseline for computing the gap. All results except CADO are taken from~\citet{li2023t2t}. The results of CADO are taken from~\citet{yoon2024cado}.}
+\label{tab:small_results}
+% \small
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{llcccc}
+\toprule
+\multirow{2}{*}{\textbf{Algorithm}} & \multirow{2}{*}{\textbf{Type}} & \multicolumn{2}{c}{\textbf{TSP-50}} & \multicolumn{2}{c}{\textbf{TSP-100}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+& & Length $\downarrow$ & Gap $\downarrow$ & Length $\downarrow$ & Gap $\downarrow$ \\
+\midrule
+Concorde*~\citep{applegate2006concorde} & Exact & 5.69 & 0.00 & 7.76 & 0.00 \\
+2-opt~\citep{lin1973effective} & Heuristic & 5.86 & 2.95 & 8.03 & 3.54 \\
+\midrule
+AM~\citep{kool2019attention} & RL+G & 5.80 & 1.76 & 8.12 & 4.53 \\
+GCN~\citep{joshi2019efficient} & SL+G & 5.87 & 3.10 & 8.41 & 8.38 \\
+Transformer~\citep{bresson2021transformer} & RL+G & 5.71 & 0.31 & 7.88 & 1.42 \\
+POMO~\citep{kwon2020pomo} & RL+G & 5.73 & 0.64 & 7.87 & 1.07 \\
+Sym-NCO~\citep{kim2022symnco} & RL+G & - & - & 7.84 & 0.94 \\
+Image Diffusion~\citep{graikos2022diffusion} & SL+G & 5.76 & 1.23 & 7.92 & 2.11 \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 5.72 & 0.48 & 7.84 & 1.01 \\
+T2T~\citep{li2023t2t} & SL+G & 5.69 & 0.04 & 7.77 & 0.18 \\
+% DISCO~\citep{zhao2024disco} & SL+G & 5.70 & 0.16 & 7.80 & 0.58 \\
+CADO~\citep{yoon2024cado} & SL+RL+G & 5.69 & 0.01 & 7.77 & 0.08 \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{5.69} & \textbf{0.01} & \textbf{7.76} & \textbf{0.04} \\
+\midrule
+AM~\citep{kool2019attention} & RL+G+2O & 5.77 & 1.41 & 8.02 & 3.32 \\
+GCN~\citep{joshi2019efficient} & SL+G+2O & 5.70 & 0.12 & 7.81 & 0.62\\
+Transformer~\citep{bresson2021transformer} & RL+G+2O & 5.70 & 0.16 & 7.85 & 1.19 \\
+POMO~\citep{kwon2020pomo} & RL+G+2O & 5.73 & 0.63 & 7.82 & 0.82 \\
+Sym-NCO~\citep{kim2022symnco} & RL+G+2O & - & - & 7.82 & 0.76 \\
+DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 5.69 & 0.09 & 7.78 & 0.22 \\
+T2T~\citep{li2023t2t} & SL+G+2O & 5.69 & 0.02 & 7.76 & 0.06 \\
+CADO~\citep{yoon2024cado} & SL+RL+G+2O & 5.69 & 0.00 & 7.76 & 0.01 \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{5.69} & \textbf{0.00} & \textbf{7.76} & \textbf{0.01} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Results on TSP-500 and TSP-1000. RL: Reinforcement Learning, SL: Supervised Learning, AS: Active Search, G: Greedy, S: Sampling, BS: Beam Search, 2O: 2-opt. Concorde* represents the baseline for computing the gap. All results except CADO and EDISCO are taken from~\citet{li2023t2t}. CADO results are from~\citet{yoon2024cado}.}
+\label{tab:large_results}
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{llccccccc}
+\toprule
+\multirow{2}{*}{\textbf{Algorithm}} & \multirow{2}{*}{\textbf{Type}} & \multicolumn{3}{c}{\textbf{TSP-500}} & \multicolumn{3}{c}{\textbf{TSP-1000}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+& & Length$\downarrow$ & Gap$\downarrow$ & Time & Length$\downarrow$ & Gap$\downarrow$ & Time \\
+\midrule
+Concorde*~\citep{applegate2006concorde} & Exact & 16.55 & -- & 37.66m & 23.12 & -- & 6.65h \\
+Gurobi~\citep{gurobi2023} & Exact & 16.55 & 0.00\% & 45.63h & -- & -- & -- \\
+LKH-3 (default)~\citep{helsgaun2017extension} & Heuristics & 16.55 & 0.00\% & 46.28m & 23.12 & 0.00\% & 2.57h \\
+% Farthest Insertion & Heuristics & 18.30 & 10.57\% & 0s & 25.72 & 11.25\% & 0s \\
+\midrule
+AM~\citep{kool2019attention} & RL+G & 20.02 & 20.99\% & 1.51m & 31.15 & 34.75\% & 3.18m \\
+GCN~\citep{joshi2019efficient} & SL+G & 29.72 & 79.61\% & 6.67m & 48.62 & 110.29\% & 28.52m \\
+POMO+EAS-Emb~\citep{kwon2020pomo} & RL+AS+G & 19.24 & 16.25\% & 12.80h & -- & -- & -- \\
+POMO+EAS-Tab~\citep{kwon2020pomo} & RL+AS+G & 24.54 & 48.22\% & 11.61h & 49.56 & 114.36\% & 63.45h \\
+DIMES~\citep{qiu2022dimes} & RL+G & 18.93 & 14.38\% & 0.97m & 26.58 & 14.97\% & 2.08m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+G & 17.81 & 7.61\% & 2.10h & 24.91 & 7.74\% & 4.49h \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 18.11 & 9.41\% & 5.70m & 25.72 & 11.24\% & 17.33m \\
+T2T~\citep{li2023t2t} & SL+G & 17.39 & 5.09\% & 4.90m & 25.17 & 8.87\% & 15.66m \\
+CADO~\citep{yoon2024cado} & SL+RL+G & 16.93 & 2.30\% & 8.23m & 23.89 & 3.33\% & 18.42m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{16.87} & \textbf{1.95\%} & 2.19m & \textbf{23.78} & \textbf{2.85\%} & 6.84m \\
+\midrule
+DIMES~\citep{qiu2022dimes} & RL+G+2O & 17.65 & 6.62\% & 1.01m & 24.83 & 7.38\% & 2.29m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+G+2O & 17.31 & 4.57\% & 2.10h & 24.33 & 5.22\% & 4.49h \\
+DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 16.81 & 1.55\% & 5.75m & 23.55 & 1.86\% & 17.52m \\
+T2T~\citep{li2023t2t} & SL+G+2O & 16.68 & 0.78\% & 4.98m & 23.41 & 1.25\% & 15.90m \\
+CADO~\citep{yoon2024cado} & SL+RL+G+2O & 16.59 & 0.24\% & 8.35m & 23.28 & 0.69\% & 18.67m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{16.58} & \textbf{0.18\%} & 2.35m & \textbf{23.24} & \textbf{0.52\%} & 6.97m \\
+\midrule
+EAN~\citep{deudon2018learning} & RL+S+2O & 23.75 & 43.57\% & 57.76m & 47.73 & 106.46\% & 5.39h \\
+AM~\citep{kool2019attention} & RL+BS & 19.53 & 18.03\% & 21.99m & 29.90 & 29.23\% & 1.64h \\
+GCN~\citep{joshi2019efficient} & SL+BS & 30.37 & 83.55\% & 38.02m & 51.26 & 121.73\% & 51.67m \\
+DIMES~\citep{qiu2022dimes} & RL+S & 18.84 & 13.84\% & 1.06m & 26.36 & 14.01\% & 2.38m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+S & 17.80 & 7.55\% & 2.11h & 24.89 & 7.70\% & 4.53h \\
+DIFUSCO~\citep{sun2023difusco} & SL+S & 17.48 & 5.65\% & 19.02m & 25.11 & 8.61\% & 59.18m \\
+T2T~\citep{li2023t2t} & SL+S & 17.02 & 2.84\% & 15.98m & 24.72 & 6.92\% & 53.92m \\
+CADO~\citep{yoon2024cado} & SL+RL+S & 16.76 & 1.27\% & 26.89m & 23.67 & 2.38\% & 61.23m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{16.72} & \textbf{1.05\%} & 7.82m & \textbf{23.57} & \textbf{1.95\%} & 23.27m \\
+\midrule
+DIMES~\citep{qiu2022dimes} & RL+S+2O & 17.64 & 6.56\% & 1.10m & 24.81 & 7.29\% & 2.86m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+S+2O & 17.29 & 4.48\% & 2.11h & 24.32 & 5.17\% & 4.53h \\
+DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 16.69 & 0.83\% & 19.05m & 23.42 & 1.30\% & 59.53m \\
+T2T~\citep{li2023t2t} & SL+S+2O & 16.61 & 0.37\% & 16.03m & 23.30 & 0.78\% & 54.67m \\
+CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01m & 23.19 & 0.30\% & 61.48m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{16.56} & \textbf{0.08\%} & 8.03m & \textbf{23.17} & \textbf{0.22\%} & 23.48m \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Results}
+
+For all EDISCO results shown in this section, we use the PNDM solver~\citep{liu2022pndm} with 50 steps, which achieves the best solution quality based on our extensive evaluation in Appendix~\ref{subsec:solver_eval}. 
+
+\paragraph{TSP-50/100 Results} 
+The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-optimal performance with 0.01\% gap on TSP-50 and 0.04\% on TSP-100, substantially outperforming DIFUSCO (0.48\% and 1.01\%) and T2T (0.04\% and 0.18\%). Unlike CADO, which requires both supervised and reinforcement learning, our purely supervised approach reaches comparable accuracy. With 2-opt post-processing, EDISCO achieves optimal solutions (0.00\% gap) on TSP-50 and 0.01\% gap on TSP-100, demonstrating that the equivariant architecture generates high-quality initial tours.
+
+\begin{wrapfigure}{l}{0.4\textwidth}
+\centering
+\vspace{-0.5cm}
+\includegraphics[width=0.4\textwidth]{graphs/generalization.pdf}
+\vspace{-0.8cm}
+\caption{Generalization performance across TSP sizes under greedy decoding.}
+\label{fig:generalization}
+\vspace{-0.2cm}
+\end{wrapfigure}
+
+\paragraph{TSP-500/1000 Results}
+Table~\ref{tab:large_results} presents results on larger-scale TSP instances. EDISCO achieves state-of-the-art performance across all decoding strategies. Using greedy decoding, EDISCO achieves gaps of 1.95\% and 2.85\% on TSP-500 and TSP-1000, outperforming DIFUSCO (9.41\%, 11.24\%) and T2T (5.09\%, 8.87\%). With 2-opt post-processing, EDISCO achieves near-optimal solutions with gaps of 0.18\% and 0.52\%, outperforming the previous best CADO (0.24\%, 0.69\%) while being 3.6× faster on TSP-500 and 2.7× faster on TSP-1000. The efficiency gain is particularly notable in sampling mode, where EDISCO requires only 7.82m and 23.27m compared to DIFUSCO's 19.02m and 59.18m, demonstrating that the use of advanced numerical solvers significantly accelerates inference without compromising solution quality.
+
+\paragraph{Generalization} 
+
+We study the generalization ability of EDISCO by training models on each problem scale from \{TSP-50, TSP-100, TSP-500, TSP-1000\} and evaluating them across all scales with only the greedy decoder. Figure~\ref{fig:generalization} shows that EDISCO exhibits strong cross-size generalization, with models trained on TSP-1000 achieving gaps below 4.3\% on all other problem scales, and particularly impressive performance of 2.90\% on TSP-500. This generalizability outperforms other diffusion methods \citep{sun2023difusco, li2023t2t}.
+
+\paragraph{Robustness to Training Data Variations}
+\begin{wrapfigure}{r}{0.5\textwidth}
+\centering
+\vspace{-0.5cm}
+\includegraphics[width=0.5\textwidth]{graphs/data_experiments.pdf}
+\vspace{-0.8cm}
+\caption{Results on TSP-50 performance. Left: Optimality gap as a function of training set size. Right: Performance comparison when trained on optimal data versus heuristic Farthest Insertion data.}
+
+\label{fig:data_experiments}
+\vspace{-0.5cm}
+\end{wrapfigure}
+
+We evaluate EDISCO's robustness to variations in training data quantity and quality, which are critical factors for practical deployment where obtaining optimal solutions may be computationally expensive. The left panel of Figure~\ref{fig:data_experiments} illustrates that EDISCO maintains near-optimal performance even with limited data, achieving gaps below 0.07\% with just 10\% of training data, compared to 2.8\% for DIFUSCO and 2.1\% for T2T.
+
+The right panel of Figure~\ref{fig:data_experiments} examines model performance when trained on suboptimal solutions generated by the Farthest Insertion heuristic, which produces tours with an average gap of 7.5\% to optimal on TSP-50~\citep{li2023t2t}. EDISCO achieves a 0.82\% gap, outperforming DIFUSCO (2.75\%) and T2T (1.35\%). This experiment also only uses the greedy decoder for all methods.
+
+\paragraph{Ablation Studies}
+
+\begin{table}[h]
+\centering
+\caption{Ablation study on TSP-500 and TSP-1000. Each row removes one key component from the full EDISCO model.}
+\label{tab:ablation}
+\small
+% \adjustbox{width=\textwidth}{%
+\begin{tabular}{lcccccccc}
+\toprule
+\multirow{2}{*}{\textbf{Model Variant}} & \multicolumn{3}{c}{\textbf{TSP-500}} & \multicolumn{3}{c}{\textbf{TSP-1000}} & \multirow{2}{*}{\textbf{Conv. Epoch}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+& Length $\downarrow$ & Gap\% $\downarrow$ & Time & Length $\downarrow$ & Gap\% $\downarrow$ & Time & \\
+\midrule
+\textbf{EDISCO (Full)} & \textbf{16.87} & \textbf{1.95} & \textbf{2.19m} & \textbf{23.78} & \textbf{2.85} & \textbf{6.84m} & 35 \\
+\midrule
+w/o Equivariance & 17.14 & 3.58 & 2.31m & 24.29 & 5.06 & 7.15m & 48 \\
+w/o Continuous-time & 17.02 & 2.86 & 4.43m & 24.11 & 4.28 & 15.58m & 42 \\
+w/o Adaptive Mixing & 16.95 & 2.44 & 2.18m & 23.91 & 3.41 & 6.85m & 38 \\
+\bottomrule
+\end{tabular}%
+% }
+\end{table}
+
+Table~\ref{tab:ablation} analyzes the contribution of each key component in EDISCO. Removing equivariance awareness causes the most significant degradation, increasing gaps from 1.95\% to 3.58\% on TSP-500 and from 2.85\% to 5.06\% on TSP-1000. It also requires 13 additional epochs to converge. The continuous-time formulation proves crucial for efficiency. Replacing it with DIFUSCO's discrete-time approach doubles inference time (4.43m vs 2.19m on TSP-500) while degrading performance by 0.91\% and 1.43\% respectively. The adaptive mixing strategy shows the smallest but still meaningful impact, with its removal increasing gaps by 0.49\% and 0.56\%. These results confirm that all three components are significant, with equivariance providing the strongest inductive bias for learning geometric patterns, continuous-time enabling efficient sampling, and adaptive mixing ensuring accurate final reconstructions.
+
+% ============ DISCUSSION AND CONCLUSION SECTION ============
+
+\section{Discussion and Conclusion}
+\label{sec:discussion}
+
+We propose EDISCO, an equivariant continuous-time diffusion solver for GCOPs. By incorporating E(2) equivariance directly into the model architecture and formulating edge selection as continuous-time Markov chains, EDISCO learns geometric patterns more efficiently, enabling the use of advanced numerical solvers for fast inference. Future directions could include the exploration of adaptive step-size solvers and the theoretical analysis of convergence properties. Additionally, combining EDISCO with search-based refinement methods or integrating it with traditional optimization algorithms could further improve solution quality. 
+
+\section*{Reproducibility Statement}
+We have made significant efforts to ensure reproducibility of our results. 
+Details of the model and experimental settings are provided in the main text (Sections~\ref{sec:method} and \ref{sec:experiments}), as well as in the Appendix~\ref{sec:architecture_details} and~\ref{sec:appendix:details}. 
+The source code and instructions for reproducing our experiments are available at \url{https://anonymous.4open.science/r/EDISCO}.
+
+
+% ============ REFERENCE ============
+% Bibliography section
+\bibliography{iclr2026_conference}
+\bibliographystyle{iclr2026_conference}
+
+
+% ============ APPENDIX ============
+\newpage
+\section*{\LARGE Appendices}
+\addcontentsline{toc}{section}{Appendices}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.5em}
+
+\noindent \textbf{Default Notation} \dotfill \pageref{notations}
+
+\noindent \textbf{A. Extension to Capacitated Vehicle Routing Problem (CVRP)} \dotfill \pageref{app:cvrp}
+
+\noindent \textbf{B. Proofs} \dotfill \pageref{sec:appendix:proofs}
+\begin{quote}
+\noindent B.1 Proof of Proposition~\ref{prop:quotient_dimension} \dotfill \pageref{subsec:proposition}\\
+B.2 Proof of E(2)-Equivariance in EDISCO \dotfill 
+\pageref{subsec:equivarince}\\
+\end{quote}
+
+\noindent \textbf{C. Extended Related Work} \dotfill \pageref{sec:extended_related_work}
+\begin{quote}
+\noindent C.1 Foundational Neural Combinatorial Optimization \dotfill \pageref{subsec:foundational_nco}\\
+C.2 Alternative Architectures and Scaling Approaches \dotfill \pageref{subsec:alt_architectures}\\
+C.3 Discrete Diffusion Foundations and Variants \dotfill \pageref{subsec:discrete_diffusion}\\
+C.4 Theoretical Foundations and Sample Complexity \dotfill \pageref{subsec:theoretical_foundations}\\
+C.5 Hybrid and Practical Approaches \dotfill \pageref{subsec:hybrid_approaches}
+\end{quote}
+\noindent \textbf{D. Architecture Details} \dotfill \pageref{sec:architecture_details}
+\begin{quote}
+\noindent D.1 Network Architecture Overview \dotfill \pageref{subsec:network_overview}\\
+D.2 Feature Representations and Initialization \dotfill \pageref{subsec:feature_representations}\\
+D.3 Equivariant Message Passing Mechanism \dotfill \pageref{subsec:message_passing}\\
+D.4 Continuous-Time Diffusion Specifications \dotfill \pageref{subsec:diffusion_specs}\\
+\end{quote}
+\noindent \textbf{E. Additional Experiment Details} \dotfill \pageref{sec:appendix:details}
+\begin{quote}
+\noindent E.1 Performance Metrics \dotfill \pageref{subsec:performance_metrics}\\
+E.2 Hardware Platform \dotfill \pageref{subsec:hardware}\\
+E.3 Results Randomness \dotfill \pageref{subsec:randomness}\\
+E.4 Data Generation Process \dotfill \pageref{subsec:data_generation}\\
+E.5 Model Architecture Specifications \dotfill \pageref{subsec:implementation_specs}\\
+E.6 Training Configuration \dotfill \pageref{subsec:training_config}
+\end{quote}
+\noindent \textbf{F. Additional Results} \dotfill \pageref{sec:additional_results}
+\begin{quote}
+\noindent F.1 Solver Evaluation on TSP-500 \dotfill \pageref{subsec:solver_eval}\\
+F.2 TSP-10000 Results \dotfill \pageref{subsec:tsp10000}\\
+F.3 TSPLIB Results \dotfill \pageref{subsec:TSPLIB}\\
+F.4 Noise Schedule Design for TSP Diffusion \dotfill \pageref{subsec:noise-schedule-experiment}\\
+F.5 Evaluation on Adaptive Mixing Parameters \dotfill \pageref{subsec:adaptivemixing}\\
+F.6 Evaluation on Architectural Hyperparameters \dotfill \pageref{subsec:archi_hyperparameters}\\
+F.7 Model Efficiency \dotfill \pageref{subsec:model_efficiency}\\
+F.8 Visualization of EDISCO's E(2)-Equivariance \dotfill \pageref{subsec:visualization}
+\end{quote}
+\vspace{0.5em}
+\noindent\rule{\textwidth}{0.4pt}
+
+\newpage
+\appendix
+
+% ============================================================================
+% Default Notations
+% ============================================================================
+\section*{Default Notation}
+\label{notations}
+\subsection*{Numbers and Arrays}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$a$ & A scalar (integer or real)\\
+$\mathbf{v}$ & A vector\\
+$\mathbf{M}$ & A matrix\\
+$\mathcal{T}$ & A tensor\\
+$\mathbf{I}_n$ & Identity matrix with $n$ rows and $n$ columns\\
+$\mathds{1}$ & Vector of ones (dimensionality implied by context)\\
+$\mathbf{0}$ & Vector or matrix of zeros (dimensionality implied by context)\\
+$\text{diag}(\mathbf{v})$ & A square, diagonal matrix with diagonal entries given by $\mathbf{v}$\\
+\end{tabular}
+\end{center}
+
+\subsection*{Graph and Combinatorial Structures}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$G = (V, E)$ & A graph with vertex set $V$ and edge set $E$\\
+$V$ & Set of $n$ nodes/cities\\
+$\mathbf{c}_i \in \mathbb{R}^2$ & Coordinates of node/city $i$\\
+$\mathbf{X} \in \{0,1\}^{n \times n}$ & Binary adjacency matrix representing edges\\
+$X_{ij}$ & Element $(i,j)$ of adjacency matrix (1 if edge exists, 0 otherwise)\\
+$d_{ij}$ & Euclidean distance between nodes $i$ and $j$\\
+$\mathcal{C}$ & Constraint condition set for valid tours\\
+\end{tabular}
+\end{center}
+
+\subsection*{Diffusion Process}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$X_0$ & Clean data at time $t=0$\\
+$X_t$ & Noisy data at time $t \in [0,1]$\\
+$\beta(t)$ & Time-dependent noise schedule\\
+$\beta_{\min}, \beta_{\max}$ & Minimum and maximum noise rates\\
+$\mathbf{Q}(t)$ & Rate matrix for continuous-time Markov chain\\
+$\mathbf{P}(t|s)$ & Transition probability matrix from time $s$ to $t$\\
+$K$ & Number of categorical states (2 for binary edges)\\
+$q(\cdot)$ & Forward diffusion distribution\\
+$p_\theta(\cdot)$ & Reverse diffusion distribution parameterized by $\theta$\\
+\end{tabular}
+\end{center}
+
+\subsection*{Neural Network Components}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$\mathbf{h}_i^{(\ell)}$ & Node features for node $i$ at layer $\ell$\\
+$\mathbf{e}_{ij}^{(\ell)}$ & Edge features between nodes $i$ and $j$ at layer $\ell$\\
+$\mathbf{x}_i^{(\ell)}$ & Coordinate embedding for node $i$ at layer $\ell$\\
+$\mathbf{m}_{ij}^{(\ell)}$ & Message from node $j$ to node $i$ at layer $\ell$\\
+$s_\theta$ & Score network with parameters $\theta$\\
+$\alpha$ & Step size for coordinate updates\\
+$\tau$ & Temperature parameter for weight scaling\\
+$w(t)$ & Time-dependent mixing weight function\\
+\end{tabular}
+\end{center}
+
+\subsection*{Geometric Transformations}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$E(2)$ & Euclidean group in 2D (rotations, translations, reflections)\\
+$SO(2)$ & Special orthogonal group (rotations)\\
+$g \in E(2)$ & A Euclidean transformation\\
+$g \cdot \mathbf{c}$ & Action of transformation $g$ on coordinates $\mathbf{c}$\\
+$\mathcal{X}/G$ & Quotient space under group action\\
+$\pi: \mathcal{X} \to \mathcal{X}/G$ & Canonical projection to 
+quotient space\\
+$A \rtimes B$ & Semi-direct product of groups $A$ and $B$\\
+\end{tabular}
+\end{center}
+
+\subsection*{Probability and Optimization}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$p(X|\{\mathbf{c}_i\})$ & Conditional distribution of tours given coordinates\\
+$\mathbb{E}[\cdot]$ & Expectation\\
+$\text{Cat}(\cdot)$ & Categorical distribution\\
+$\delta_{ij}$ & Kronecker delta (1 if $i=j$, 0 otherwise)\\
+$\mathcal{L}$ & Loss function\\
+$\text{NFE}$ & Number of function evaluations\\
+Gap & Optimality gap: $(L_{\text{pred}} - L_{\text{opt}})/L_{\text{opt}} \times 100\%$\\
+\end{tabular}
+\end{center}
+
+\subsection*{Functions and Operations}
+\begin{center}
+\begin{tabular}{p{1.25in}p{4in}}
+$\|\cdot\|_2$ & Euclidean norm\\
+$\oplus$ & Concatenation operation\\
+$\odot$ & Element-wise multiplication\\
+$\circ$ & Function composition, $(f \circ g)(x) = f(g(x))$\\
+$\sigma(\cdot)$ & Sigmoid activation function\\
+$\tanh(\cdot)$ & Hyperbolic tangent activation\\
+$\text{MLP}(\cdot)$ & Multi-layer perceptron\\
+$\text{LayerNorm}(\cdot)$ & Layer normalization\\
+$\text{SiLU}(\cdot)$ & Sigmoid Linear Unit activation\\
+$\text{softmax}(\cdot)$ & Softmax function\\
+$\text{argmax}(\cdot)$ & Argument of the maximum\\
+\end{tabular}
+\end{center}
+
+\section{Extension to Capacitated Vehicle Routing Problem (CVRP)}
+\label{app:cvrp}
+
+\paragraph{Problem Formulation and Equivariance Preservation}
+
+The Capacitated Vehicle Routing Problem (CVRP) extends TSP by introducing vehicle capacity constraints and requiring multiple routes from a central depot. While maintaining the geometric structure of TSP, CVRP presents additional challenges: (1) handling heterogeneous node types (depot vs. customers), (2) incorporating demand constraints, and (3) generating multiple feasible routes.
+
+To preserve E(2) equivariance in CVRP, we separate geometric and non-geometric features:
+\begin{itemize}
+    \item \textbf{Equivariant features}: Customer and depot coordinates $\mathbf{c} \in \mathbb{R}^{n \times 2}$ that transform under rotations and translations
+    \item \textbf{Invariant features}: Customer demands $d_i \in \mathbb{R}^+$ and depot indicator $\mathds{1}_{\text{depot}}$ that remain unchanged under geometric transformations
+\end{itemize}
+
+The key insight is that while coordinates must flow through equivariant layers, demands and capacity constraints are problem-specific invariants that should not be mixed with geometric representations. Our EGNN architecture processes these separately, combining them only through invariant operations (distances and message passing).
+
+\paragraph{Feature Separation in EGNN Layers}
+Unlike TSP where node features are initialized from coordinates, CVRP initializes node embeddings exclusively from invariant features:
+\begin{equation}
+    h_i^{(0)} = \text{NodeEmbed}([d_i, \mathds{1}_{\text{depot}}(i)])
+\end{equation}
+where $d_i$ is the demand of customer $i$ and $\mathds{1}_{\text{depot}}(i)$ indicates whether node $i$ is the depot. This ensures that geometric transformations of coordinates do not affect the initial node representations, maintaining strict equivariance.
+
+\paragraph{Capacity-Aware Greedy Decoding}
+The greedy decoder for CVRP incorporates domain-specific heuristics to construct feasible routes while respecting capacity constraints.
+
+Edge scores are computed following the same method as in TSP: $s_{ij} = (P_{ij} + P_{ji})/d_{ij}$, where $d_{ij}$ is the Euclidean distance between nodes $i$ and $j$. The symmetrization $(P_{ij} + P_{ji})$ accounts for the undirected nature of the routing problem.
+
+Routes are constructed iteratively while maintaining feasibility constraints. Starting with an empty set of routes $\mathcal{R}$ and unvisited customers $\mathcal{U} = \{1, ..., n\}$, each new route begins by selecting the highest-scoring feasible edge from the depot to a customer $j^*$ whose demand $d_{j^*}$ does not exceed the vehicle capacity $C$. The route is then extended greedily by iteratively selecting the next customer $k^* = \arg\max_{k \in \mathcal{U}} s_{jk}$ subject to the capacity constraint $\sum_{i \in \mathcal{R}_r} d_i + d_k \leq C$, where $\mathcal{R}_r$ denotes the current route being constructed. When no feasible extensions exist due to capacity limitations, the vehicle returns to the depot, and a new route is initiated if unvisited customers remain.
+
+To ensure solution completeness, any customers that remain unvisited after the main construction phase are assigned to individual routes. This post-processing step guarantees that all customers are served, though it may result in suboptimal routing for instances with tight capacity constraints. The overall approach balances solution quality with computational efficiency while maintaining the geometric structure learned by the equivariant network.
+
+We evaluate EDISCO on standard CVRP benchmarks with 20, 50, and 100 customers, following the evaluation protocol from \citet{kool2019attention}. All instances use a vehicle capacity of 50 units with customer demands uniformly sampled from $\{1, ..., 9\}$.
+
+\begin{table}[h]
+\centering
+\caption{Results on CVRP-20, CVRP-50, and CVRP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy, S: Sampling. LKH-3* represents the baseline for computing the gap. Gurobi results are from the user's provided table. AM results are from \citet{kool2019attention}. POMO results are from \citet{kwon2020pomo}. Sym-NCO results are from \citet{kim2022symnco} (CVRP-100 only).}
+\label{tab:cvrp_results}
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{llcccccccc}
+\toprule
+\multirow{2}{*}{\textbf{Algorithm}} & \multirow{2}{*}{\textbf{Type}} & \multicolumn{2}{c}{\textbf{CVRP-20}} & \multicolumn{2}{c}{\textbf{CVRP-50}} & \multicolumn{2}{c}{\textbf{CVRP-100}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+& & Cost$\downarrow$ & Gap$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ \\
+\midrule
+Gurobi~\citep{gurobi2023} & Exact & 6.10 & 0.00\% & -- & -- & -- & -- \\
+LKH-3*~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 10.38 & 0.00\% & 15.65 & 0.00\% \\
+\midrule
+\multicolumn{8}{l}{\textit{Greedy Decoding}} \\
+\midrule
+AM~\citep{kool2019attention} & RL+G & 6.40 & 4.97\% & 10.98 & 5.86\% & 16.80 & 7.34\% \\
+POMO~\citep{kwon2020pomo} & RL+G & 6.35 & 3.72\% & 10.74 & 3.52\% & 16.13 & 3.09\% \\
+Sym-NCO~\citep{kim2022symnco} & RL+G & -- & -- & -- & -- & \textbf{16.10} & \textbf{2.88\%} \\
+\textbf{EDISCO (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & \textbf{10.63} & \textbf{2.46\%} & 16.15 & 3.17\% \\
+\midrule
+\multicolumn{8}{l}{\textit{Sampling/Multiple Trajectories}} \\
+\midrule
+AM~\citep{kool2019attention} & RL+S (1280) & 6.25 & 2.49\% & 10.62 & 2.40\% & 16.23 & 3.72\% \\
+POMO (no aug)~\citep{kwon2020pomo} & RL+G & 6.17 & 0.82\% & 10.49 & 1.14\% & 15.83 & 1.13\% \\
+POMO (×8 aug)~\citep{kwon2020pomo} & RL+G & \textbf{6.14} & \textbf{0.21}\% & 10.42 & 0.45\% & 15.73 & 0.51\% \\
+Sym-NCO~\citep{kim2022symnco} & RL+S (100) & -- & -- & -- & -- & 15.87 & 1.40\% \\
+\textbf{EDISCO (ours)} & SL+S (1280) & 6.15 & 0.33\% & \textbf{10.41} & \textbf{0.35\%} & \textbf{15.71} & \textbf{0.38\%} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\paragraph{Analysis of Results} The results are shown in Table~\ref{tab:cvrp_results}. EDISCO demonstrates strong performance on CVRP, achieving competitive results across all instance sizes. With greedy decoding, EDISCO substantially outperforms AM (1.41\% vs 4.97\% on CVRP-20), though it slightly trails Sym-NCO on CVRP-100 (3.17\% vs 2.88\%). With sampling, EDISCO achieves the best performance on larger instances (0.35\% on CVRP-50, 0.38\% on CVRP-100) but falls behind POMO with augmentation on CVRP-20 (0.33\% vs 0.21\%).
+
+These results highlight fundamental differences between diffusion models and autoregressive approaches. Autoregressive models like POMO generate solutions sequentially, enabling them to leverage explicit augmentation strategies that evaluate problems from multiple geometric perspectives. POMO's 8× augmentation effectively multiplies the search space by considering rotated and reflected problem instances. In contrast, EDISCO's diffusion process operates on entire adjacency matrices simultaneously, learning to denoise complete solutions rather than constructing them step-by-step. While this parallel generation captures global solution patterns more effectively, it cannot directly benefit from the same augmentation multipliers that boost autoregressive performance on small instances.
+
+\section{Proofs}
+\label{sec:appendix:proofs}
+
+\subsection{Proof of Proposition~\ref{prop:quotient_dimension}}
+\label{subsec:proposition}
+
+\begin{proof}
+We establish each claim systematically.
+
+\textbf{Part (i): Quotient manifold structure.}
+The Euclidean group $\mathrm{E}(2) = \mathbb{R}^2 \rtimes \mathrm{SO}(2)$ is a 3-dimensional Lie group, where $\mathbb{R}^2$ corresponds to translations and $\mathrm{SO}(2)$ to rotations. The action of $g = (t, R) \in \mathrm{E}(2)$ on a configuration $\mathbf{x} = (x_1, y_1, \ldots, x_n, y_n) \in X$ is given by:
+\[
+g \cdot \mathbf{x} = (Rx_1' + t, Ry_1' + t, \ldots, Rx_n' + t, Ry_n' + t)
+\]
+where $x_i' = (x_i, y_i)^T$ denotes the $i$-th city as a column vector, and $R \in \mathrm{SO}(2)$ acts by matrix multiplication.
+
+To show the action is free, suppose $g \cdot \mathbf{x} = \mathbf{x}$ for some $g = (t, R) \in G$ and $\mathbf{x} \in X$. This means:
+\[
+R \begin{pmatrix} x_i \\ y_i \end{pmatrix} + t = \begin{pmatrix} x_i \\ y_i \end{pmatrix} \quad \forall i \in \{1, \ldots, n\}
+\]
+
+For $i = 1$, we have $(R - I) \begin{pmatrix} x_1 \\ y_1 \end{pmatrix} = -t$. For $i = 2$, we have $(R - I) \begin{pmatrix} x_2 \\ y_2 \end{pmatrix} = -t$. Subtracting these equations:
+\[
+(R - I) \begin{pmatrix} x_1 - x_2 \\ y_1 - y_2 \end{pmatrix} = 0
+\]
+
+If the cities are not all identical (which we assume for any meaningful TSP instance), there exists at least one pair $(i, j)$ such that $(x_i - x_j, y_i - y_j) \neq (0, 0)$. For $R \neq I$, the matrix $(R - I)$ has rank 2 (its eigenvalues are $e^{i\theta} - 1$ and $e^{-i\theta} - 1$ for rotation angle $\theta \neq 0$), so it has trivial kernel. Thus $(R - I)v = 0$ for non-zero $v$ implies $R = I$.
+
+With $R = I$, the condition becomes $t = 0$, so $g = e$ is the identity. Therefore, the action is free.
+
+By the quotient manifold theorem \citep{lee2012smooth}, when a Lie group $G$ acts freely and properly on a manifold $M$, the quotient $M/G$ inherits a unique smooth manifold structure such that $\pi: M \to M/G$ is a smooth submersion. The dimension formula gives:
+\[
+\dim(X/G) = \dim(X) - \dim(G) = 2n - 3
+\]
+
+\textbf{Part (ii): Factorization of equivariant functions.}
+Let $F: X \to Y$ be a $G$-equivariant function, meaning $F(g \cdot \mathbf{x}) = \rho(g) \cdot F(\mathbf{x})$ for all $g \in G$ and $\mathbf{x} \in X$, where $\rho: G \to \mathrm{Aut}(Y)$ is a representation of $G$ on $Y$.
+
+For TSP edge prediction, we typically have $Y = \{0,1\}^{n \times n}$ (adjacency matrices) and $\rho$ is the trivial representation (since the optimal tour is invariant under Euclidean transformations of the cities). Thus $F(g \cdot \mathbf{x}) = F(\mathbf{x})$ for all $g \in G$.
+
+Define $\widetilde{F}: X/G \to Y$ by $\widetilde{F}([\mathbf{x}]) = F(\mathbf{x})$, where $[\mathbf{x}] = \{g \cdot \mathbf{x} : g \in G\}$ denotes the orbit of $\mathbf{x}$. This is well-defined precisely because of equivariance: if $[\mathbf{x}] = [\mathbf{x}']$, then $\mathbf{x}' = g \cdot \mathbf{x}$ for some $g \in G$, so:
+\[
+\widetilde{F}([\mathbf{x}']) = F(\mathbf{x}') = F(g \cdot \mathbf{x}) = F(\mathbf{x}) = \widetilde{F}([\mathbf{x}])
+\]
+
+The factorization $F = \widetilde{F} \circ \pi$ follows immediately from the definition:
+\[
+F(\mathbf{x}) = \widetilde{F}([\mathbf{x}]) = \widetilde{F}(\pi(\mathbf{x})) = (\widetilde{F} \circ \pi)(\mathbf{x})
+\]
+
+Uniqueness of $\widetilde{F}$ follows from surjectivity of $\pi$: if $F = \widetilde{F}_1 \circ \pi = \widetilde{F}_2 \circ \pi$, then for any $[\mathbf{x}] \in X/G$, choosing any representative $\mathbf{x} \in [\mathbf{x}]$:
+\[
+\widetilde{F}_1([\mathbf{x}]) = \widetilde{F}_1(\pi(\mathbf{x})) = F(\mathbf{x}) = \widetilde{F}_2(\pi(\mathbf{x})) = \widetilde{F}_2([\mathbf{x}])
+\]
+
+\textbf{Part (iii): Learning complexity reduction.}
+The factorization $F = \widetilde{F} \circ \pi$ establishes a bijection between:
+\begin{align*}
+\{\text{$G$-equivariant functions } X \to Y\} &\longleftrightarrow \{\text{functions } X/G \to Y\}\\
+F &\longmapsto \widetilde{F}\\
+\widetilde{F} \circ \pi &\longmapsfrom \widetilde{F}
+\end{align*}
+
+Therefore, learning any $G$-equivariant function $F$ is equivalent to learning the corresponding function $\widetilde{F}$ on the quotient manifold. Since $X/G$ has dimension $2n - 3$ while $X$ has dimension $2n$, the domain of $\widetilde{F}$ has three fewer degrees of freedom.
+
+In terms of function approximation, this means:
+\begin{itemize}
+    \item A basis of functions on $X/G$ requires parametrization by $2n - 3$ variables
+    \item Local charts for $X/G$ have dimension $2n - 3$
+    \item The metric entropy and covering numbers scale with the intrinsic dimension $2n - 3$
+\end{itemize}
+
+This completes the proof that E(2)-equivariant learning reduces to learning on a lower-dimensional manifold, providing the theoretical foundation for improved sample efficiency.
+\end{proof}
+
+\subsection{Proof of E(2)-Equivariance in EDISCO}
+\label{subsec:equivarince}
+\begin{proof}
+We prove that E(2)-equivariance is preserved throughout the entire EDISCO pipeline, from input processing through diffusion to tour construction.
+
+\textbf{Step 1: EGNN Architecture Preserves Equivariance}
+
+For any Euclidean transformation $g \in E(n)$, we show each layer maintains equivariance:
+
+\textit{(i) Distance invariance:} For transformed coordinates $g \cdot c_i$:
+$$d_{ij}^{(g)} = \|g \cdot c_i - g \cdot c_j\|_2 = \|g(c_i - c_j)\|_2 = \|c_i - c_j\|_2 = d_{ij}$$
+
+\textit{(ii) Message invariance:} From Equation~\ref{eq:message}, messages depend only on:
+- Node features $h_i, h_j$ (initialized as invariant city indices)
+- Edge features $e_{ij}$ (initialized from noisy adjacency matrix)  
+- Distances $d_{ij}$ (proven invariant above)
+
+Therefore: $m_{ij}^{(g)} = m_{ij}$
+
+\textit{(iii) Coordinate equivariance:} The update rule (Equation~\ref{eq:coord_update}):
+\begin{align}
+\Delta(g \cdot x_i) &= \alpha \sum_{j \neq i} w_{ij} \cdot \frac{g \cdot x_j - g \cdot x_i}{\|g \cdot x_j - g \cdot x_i\|_2} \\
+&= \alpha \sum_{j \neq i} w_{ij} \cdot \frac{g(x_j - x_i)}{\|x_j - x_i\|_2} \\
+&= g \cdot \left(\alpha \sum_{j \neq i} w_{ij} \cdot \frac{x_j - x_i}{\|x_j - x_i\|_2}\right) \\
+&= g \cdot \Delta x_i
+\end{align}
+
+\textit{(iv) Feature invariance:} Edge and node feature updates depend only on invariant quantities, thus $e_{ij}^{(g)} = e_{ij}$ and $h_i^{(g)} = h_i$.
+
+\textbf{Step 2: Diffusion Process Maintains Equivariance}
+
+The categorical diffusion operates on edge variables $X_{ij} \in \{0,1\}$, which represent whether edge $(i,j)$ is in the tour. These are inherently invariant to coordinate transformations.
+
+\textit{Forward process:} The corruption adds noise to edge selections independent of coordinates:
+$$q(X_t | X_0) = \prod_{i,j} \text{Cat}(X_{t,ij} | p = P_{ij}(t|0))$$
+
+\textit{Reverse process:} Since the score network $s_\theta$ outputs edge probabilities that are invariant (proven in Step 1), the reverse process maintains this invariance:
+$$p_\theta(X_{t-\Delta t} | X_t, g(\{c_i\})) = p_\theta(X_{t-\Delta t} | X_t, \{c_i\})$$
+
+\textbf{Step 3: Tour Construction Preserves Optimality}
+
+The greedy decoding computes scores:
+$$s_{ij}^{(g)} = \frac{P_{ij} + P_{ji}}{d_{ij}^{(g)}} = \frac{P_{ij} + P_{ji}}{d_{ij}} = s_{ij}$$
+
+Since edge scores are identical under transformation, the greedy algorithm produces tours with identical edge selections (up to vertex relabeling).
+\end{proof}
+
+% ============================================================================
+% Extended Related Work
+% ============================================================================
+
+\section{Extended Related Work}
+\label{sec:extended_related_work}
+
+\subsection{Foundational Neural Combinatorial Optimization}
+\label{subsec:foundational_nco}
+The application of neural networks to combinatorial optimization began with Pointer Networks~\citep{vinyals2015pointer}, which introduced attention mechanisms to construct variable-length permutations. While this required supervised training with optimal solutions, subsequent work~\citep{bello2017neural} demonstrated that reinforcement learning could discover effective heuristics without labeled data, eliminating a major practical limitation. The evolution continued with the attention model~\citep{kool2019attention}, which improved upon Pointer Networks through multi-head attention and achieved strong performance without problem-specific design. POMO~\citep{kwon2020pomo} further advanced autoregressive methods by exploring multiple rollouts from different starting points. These foundational works established that neural networks could learn meaningful representations of combinatorial structure, though they struggled with generalization to larger instances~\citep{fu2021generalize}.
+
+\subsection{Alternative Architectures and Scaling Approaches}
+\label{subsec:alt_architectures}
+Beyond diffusion-based methods, several innovative architectures address the challenge of scaling to large TSP instances. LEHD (Light Encoder Heavy Decoder)~\citep{fu2024lehd} achieves remarkable scalability to instances with up to 10,000 cities by separating encoding and decoding complexity—training on small instances but generalizing through architectural design rather than data. Bisimulation quotienting (BQ-NCO)~\citep{drakulic2023bqnco} takes a fundamentally different approach by reformulating the MDP to group behaviorally similar states, achieving strong zero-shot generalization. Hierarchical approaches like GLOP~\citep{corsini2024glop} combine global partition with local construction for real-time routing, while the hierarchical neural constructive solver~\citep{goh2024hierarchical} builds solutions through multiple resolution levels. These methods demonstrate that architectural innovations can sometimes overcome the data requirements that limit standard approaches.
+
+\subsection{Discrete Diffusion Foundations and Variants}
+\label{subsec:discrete_diffusion} 
+The theoretical foundations for discrete diffusion~\citep{austin2021structured} established how to apply diffusion processes to categorical data through transition matrices, providing the basis for subsequent TSP solvers. Recent advances include variational flow matching~\citep{akhoundsadegh2024variational} and discrete flow matching~\citep{campbell2024discrete}, which provide alternative formulations with improved training dynamics. The comprehensive treatment of continuous diffusion for categorical data~\citep{dieleman2022continuous} addressed many technical details necessary for practical implementation. DeFoG~\citep{defog2024discrete} demonstrates state-of-the-art performance on graph generation through discrete flow matching, suggesting potential applications to optimization. The connection to optimal transport~\citep{lipman2022flow} offers theoretical insights that could lead to algorithmic improvements, while regularized Langevin dynamics~\citep{zhang2025regularized} shows how continuous-time formulations avoid local optima more effectively than discrete-time approaches.
+
+\subsection{Theoretical Foundations and Sample Complexity}
+\label{subsec:theoretical_foundations}
+Understanding why certain neural architectures succeed at combinatorial optimization remains an active area of research. The analysis of graph neural network expressiveness~\citep{xu2019powerful} establishes fundamental representation limits, while work on algorithmic alignment~\citep{xu2021neural} shows that architectures matching problem structure generalize better. Recent theoretical advances prove that equivariant models achieve exponentially better sample complexity than non-equivariant ones~\citep{brehmer2024does}, providing a rigorous justification for geometric inductive biases. The analysis of learning TSP and generalization~\citep{joshi2022learning} demonstrates fundamental limitations of supervised approaches and suggests that architectural innovations are necessary for progress. Convergence analysis for discrete diffusion models~\citep{zhang2024convergence} provides rates that inform practical algorithm design, while the study of instance hardness~\citep{smith2010understanding} reveals what makes problems difficult for neural solvers.
+
+\subsection{Hybrid and Practical Approaches}
+\label{subsec:hybrid_approaches}
+Combining neural networks with classical optimization algorithms leverages complementary strengths. Learning to perform local rewriting~\citep{chen2019learning} trains networks to improve existing solutions through targeted modifications, while integration with branch-and-bound~\citep{gasse2019learning} accelerates exact algorithms through learned branching strategies. Neural diving~\citep{nair2020solving} combines neural networks with MIP solvers for fast feasible solution finding. These hybrid methods often outperform purely neural or classical approaches, suggesting that practical deployment may require combining paradigms. Recent work on unsupervised learning~\citep{wang2023metalearning} and self-improvement~\citep{hudson2024selfimprovement} reduces dependence on high-quality training data, addressing a major practical limitation. Applications beyond TSP demonstrate broader impact, including vehicle routing with complex constraints~\citep{nazari2018reinforcement}, scheduling~\citep{zhang2020learning}, and circuit design~\citep{mirhoseini2021graph}.
+
+% ============================================================================
+% Architecture Details
+% ============================================================================
+
+\section{Architecture Details}
+\label{sec:architecture_details}
+
+\subsection{Network Architecture Overview}
+\label{subsec:network_overview}
+
+The EDISCO model employs a 12-layer E(2)-equivariant graph neural network that processes city coordinates and noisy adjacency matrices while maintaining geometric equivariance. The architecture consists of three main components: an embedding module, stacked equivariant layers, and a prediction head.
+
+\subsection{Feature Representations and Initialization}
+\label{subsec:feature_representations}
+The model maintains three distinct feature types throughout the network:
+
+\paragraph{Spatial Features.} City coordinates $\mathbf{c} \in \mathbb{R}^{n \times 2}$ are transformed into 64-dimensional node embeddings via a linear projection. Additionally, coordinate representations $\mathbf{x} \in \mathbb{R}^{n \times 2}$ are maintained separately and evolve through equivariant updates during message passing.
+
+\paragraph{Relational Features.} Edge features $\mathbf{e} \in \mathbb{R}^{n \times n \times 64}$ encode pairwise relationships and tour decisions. These are initialized from the noisy adjacency matrix $X_t$ through a single linear transformation.
+
+\paragraph{Temporal Encoding.} The continuous diffusion time $t \in [0,1]$ is encoded using sinusoidal basis functions with frequencies spanning multiple octaves, producing a 128-dimensional representation that modulates the network's behavior at different noise levels.
+
+\subsection{Equivariant Message Passing Mechanism}
+\label{subsec:message_passing}
+Each EGNN layer performs the following operations while preserving E(n) symmetry:
+
+\paragraph{Message Formation.} Pairwise messages aggregate local and geometric information:
+$$\mathbf{m}_{ij} = f_{\text{msg}}(\mathbf{h}_i \oplus \mathbf{h}_j \oplus \mathbf{e}_{ij} \oplus d_{ij})$$
+where $d_{ij} = \|\mathbf{x}_i - \mathbf{x}_j\|_2$ provides rotation-invariant distance information and $f_{\text{msg}}$ is a 3-layer MLP with SiLU activations and layer normalization.
+
+\paragraph{Geometric Updates.} Coordinate evolution respects equivariance constraints through normalized directional updates:
+$$\mathbf{x}_i \leftarrow \mathbf{x}_i + 0.1 \sum_{j} \text{Gate}(\mathbf{m}_{ij}) \cdot \frac{\mathbf{x}_j - \mathbf{x}_i}{\|\mathbf{x}_j - \mathbf{x}_i\|_2 + 10^{-8}}$$
+The gating function employs a temperature-scaled tanh with $\tau=10$ to prevent gradient saturation.
+
+\paragraph{Feature Evolution.} Node and edge features incorporate aggregated messages through residual connections:
+\begin{align}
+\mathbf{h}_i &\leftarrow \text{LN}(\mathbf{h}_i + f_{\text{node}}(\mathbf{h}_i, \sum_j \mathbf{m}_{ij}))\\
+\mathbf{e}_{ij} &\leftarrow \text{LN}(\mathbf{e}_{ij} + f_{\text{edge}}(\mathbf{e}_{ij}, \mathbf{m}_{ij}) + f_{\text{time}}(\mathbf{t}))
+\end{align}
+where LN denotes layer normalization and $f_{\text{node}}$, $f_{\text{edge}}$, $f_{\text{time}}$ are learned transformations.
+
+\subsection{Continuous-Time Diffusion Specifications}
+\label{subsec:diffusion_specs}
+\paragraph{Forward Process.} The categorical diffusion operates on binary edge variables through a continuous-time Markov chain with rate matrix:
+$$Q(t) = \beta(t) \begin{bmatrix} -0.5 & 0.5 \\ 0.5 & -0.5 \end{bmatrix}$$
+where $\beta(t)$ increases linearly from 0.1 to 1.5 over the unit interval.
+
+\paragraph{Transition Dynamics.} The forward transition probability admits a closed-form solution:
+$$P(X_t = j | X_0 = i) = \frac{1}{2} + \left(\delta_{ij} - \frac{1}{2}\right) \exp\left(-2\int_0^t \beta(u)du\right)$$
+
+\paragraph{Reverse Sampling.} The model employs an adaptive mixing strategy that interpolates between diffusion dynamics and direct prediction:
+\begin{itemize}
+    \item For $t > 0.1$: Stochastic transitions weighted by $w(t) = t$.
+    \item For $t \leq 0.1$: Deterministic argmax selection.
+    \item Default sampling uses 50 steps with optional adaptive scheduling.
+\end{itemize}
+
+% ============================================================================
+% Additional Experiment Details
+% ============================================================================
+
+\section{Additional Experiment Details}
+\label{sec:appendix:details}
+
+\subsection{Performance Metrics}
+\label{subsec:performance_metrics}
+We evaluate models using three criteria:
+\begin{itemize}
+    \item \textbf{Tour Length}: Average Euclidean length of generated tours across test instances
+    \item \textbf{Optimality Gap}: Relative deviation from optimal/best-known solutions, computed as $(L_{\text{model}} - L_{\text{optimal}})/L_{\text{optimal}} \times 100\%$
+    \item \textbf{Inference Duration}: Wall-clock time for generating solutions on the test set, measured in seconds (s) or minutes (m)
+\end{itemize}
+
+\subsection{Hardware Platform} 
+\label{subsec:hardware}
+
+All experiments were conducted on a single NVIDIA RTX A6000 GPU paired with dual Intel Xeon Gold 5218R CPUs. Both training and inference use the same hardware configuration.
+
+\subsection{Results Randomness}
+\label{subsec:randomness}
+Due to the stochastic nature of diffusion models, all results reported are the averaged results over five runs with different random seeds.
+
+\subsection{Data Generation Process}
+\label{subsec:data_generation}
+\paragraph{Instance Creation} We follow the exact data generation protocol from DIFUSCO~\citep{sun2023difusco} for fair comparison. All cities are sampled uniformly from the unit square $[0,1]^2$ following standard practice in the TSP literature. For smaller instances, TSP-50 and TSP-100 problems are solved to optimality using the Concorde exact solver~\citep{applegate2006concorde} to obtain ground truth tours. For larger scales, TSP-500 and TSP-1000 instances are labeled using the LKH-3 heuristic solver~\citep{helsgaun2017extension} with 500 trials to ensure near-optimal solution quality. Our evaluation employs the standard test sets from Kool et al.~\citep{kool2019attention} for TSP-50/100 containing 1,280 instances each, and from Fu et al.~\citep{fu2021generalize} for TSP-500/1000 containing 128 instances each.
+
+\paragraph{Graph Sparsification} For problems exceeding 100 cities, computational efficiency necessitates graph sparsification strategies. We implement k-nearest neighbor sparsification where each city connects only to its k closest neighbors based on Euclidean distance, setting k=50 for TSP-500 and k=100 for TSP-1000. This distance-based edge pruning dramatically reduces the computational complexity from O(n²) to O(nk) while preserving the most relevant edges for tour construction. Correspondingly, dense matrix operations are replaced with their sparse equivalents throughout the network architecture to maintain computational efficiency at scale.
+
+\subsection{Model Architecture Specifications}
+\label{subsec:implementation_specs}
+For all experiments, the network contains approximately 5.5M trainable parameters distributed across:
+\begin{itemize}
+    \item 12 EGNN layers with shared architecture
+    \item Node dimension: 64
+    \item Edge dimension: 64  
+    \item Hidden dimension: 256
+    \item Timestep embedding dimension: 128
+\end{itemize}
+This setting ensures that EDISCO has a similar number of trainable parameters to the SOTA diffusion TSP solvers (5.3M)~\citep{sun2023difusco,li2023t2t,yoon2024cado,zhao2024disco}, allowing for a fair comparison.
+
+\subsection{Training Configuration}
+\label{subsec:training_config}
+We train EDISCO using the AdamW optimizer with a learning rate of $2 \times 10^{-4}$ and weight decay of $10^{-5}$. The learning rate follows a cosine annealing schedule over the training epochs to ensure smooth convergence. For training stability, we apply gradient clipping at unit norm to prevent exploding gradients during the reverse diffusion process. The loss function employs a simplified ELBO formulation with time-dependent weighting $(1 - \sqrt{t})$, which emphasizes reconstruction accuracy near $t=0$ while maintaining stable gradients throughout the diffusion trajectory.
+
+\begin{itemize}
+    \item \textbf{TSP-50}: 500,000 training instances, batch size 64, 50 epochs.
+    \item \textbf{TSP-100}: 500,000 training instances, batch size 32, 50 epochs.
+    \item \textbf{TSP-500}: 60,000 instances, batch size 16, 50 epochs with curriculum learning initialized from TSP-100 checkpoint.
+    \item \textbf{TSP-1000}: 30,000 instances, batch size 8, 50 epochs with curriculum learning initialized from TSP-100 checkpoint.
+    \item \textbf{TSP-10000}: 3,000 instances, batch size 4, 50 epochs with curriculum learning initialized from TSP-500 checkpoint.
+\end{itemize}
+
+% ============================================================================
+% Additional Results
+% ============================================================================
+
+\section{Additional Results}
+\label{sec:additional_results}
+
+\subsection{Solver Evaluation on TSP-500}
+\label{subsec:solver_eval}
+
+\begin{table}[h]
+\centering
+\caption{Comprehensive solver evaluation on TSP-500. G: Greedy Decoding. Best gap: PNDM with 50 steps (1.95\%). Fastest $<$3\% gap: DEIS-2 with 5 steps (2.78\%, 0.23m).}
+\label{tab:solver_tsp500_complete}
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{llccccc}
+\toprule
+\multirow{2}{*}{\textbf{Method}} & \multirow{2}{*}{\textbf{Type}} & \multicolumn{2}{c}{\textbf{Steps}} & \multicolumn{2}{c}{\textbf{Performance}} & \textbf{Time} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-7}
+& & Steps & NFE & Length $\downarrow$ & Gap $\downarrow$ & (minutes) $\downarrow$ \\
+\midrule
+Concorde*~\citep{applegate2006concorde} & Exact & - & - & 16.55 & 0.00\% & - \\
+\midrule
+\multicolumn{7}{l}{\textit{Discrete-Time Baselines}} \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 120 & 120 & 18.11 & 9.41\% & 5.70 \\
+T2T~\citep{li2023t2t} & SL+G & 20 & $\sim$60 & 17.39 & 5.09\% & 4.90 \\
+\midrule
+\multicolumn{7}{l}{\textit{First-Order Solvers}} \\
+\textbf{EDISCO} (Euler)~\citep{sarkka2019applied} & SL+G & 10 & 11 & 17.07 & 3.14\% & 0.45 \\
+\textbf{EDISCO} (Euler) & SL+G & 25 & 26 & 17.10 & 3.32\% & 1.09 \\
+\textbf{EDISCO} (Euler) & SL+G & 50 & 51 & 17.08 & 3.18\% & 2.15 \\
+\textbf{EDISCO} (Euler) & SL+G & 100 & 101 & 17.02 & 2.81\% & 4.25 \\
+\textbf{EDISCO} (DDIM, $\eta$=0)~\citep{song2021denoising} & SL+G & 10 & 11 & 18.97 & 14.48\% & 0.45 \\
+\textbf{EDISCO} (DDIM, $\eta$=0) & SL+G & 50 & 51 & 19.35 & 17.61\% & 2.13 \\
+\textbf{EDISCO} (DDIM, $\eta$=0.5) & SL+G & 10 & 11 & 18.03 & 9.52\% & 0.44 \\
+\midrule
+\multicolumn{7}{l}{\textit{Multi-Step Methods}} \\
+\textbf{EDISCO} (PNDM)~\citep{liu2022pndm} & SL+G & 5 & 6 & 17.41 & 5.29\% & 0.23 \\
+\textbf{EDISCO} (PNDM) & SL+G & 10 & 11 & 17.05 & 3.02\% & 0.43 \\
+\textbf{EDISCO} (PNDM) & SL+G & 25 & 26 & 17.16 & 3.68\% & 1.10 \\
+\textbf{EDISCO} (PNDM) & SL+G & 50 & 51 & 16.87 & \textbf{1.95}\% & 2.19 \\
+\textbf{EDISCO} (PNDM) & SL+G & 100 & 101 & 16.89 & 2.31\% & 4.35 \\
+\midrule
+\multicolumn{7}{l}{\textit{Exponential Integrators}} \\
+\textbf{EDISCO} (DEIS-2)~\citep{zhang2022deis} & SL+G & 5 & 6 & 17.01 & 2.78\% & \textbf{0.23} \\
+\textbf{EDISCO} (DEIS-2) & SL+G & 10 & 11 & 17.73 & 7.12\% & 0.42 \\
+\textbf{EDISCO} (DEIS-2) & SL+G & 25 & 26 & 18.58 & 12.26\% & 1.09 \\
+\textbf{EDISCO} (DEIS-3) & SL+G & 5 & 6 & 17.29 & 4.48\% & 0.23 \\
+\textbf{EDISCO} (DEIS-3) & SL+G & 10 & 11 & 18.31 & 10.63\% & 0.45 \\
+\midrule
+\multicolumn{7}{l}{\textit{Higher-Order Solvers}} \\
+\textbf{EDISCO} (Heun/RK2)~\citep{butcher2016numerical} & SL+G & 5 & 10 & 16.89 & 2.34\% & 0.40 \\
+\textbf{EDISCO} (Heun/RK2) & SL+G & 10 & 20 & 16.88 & 1.99\% & 0.83 \\
+\textbf{EDISCO} (Heun/RK2) & SL+G & 25 & 50 & 16.90 & 2.17\% & 2.09 \\
+\textbf{EDISCO} (DPM-Solver-2)~\citep{lu2022dpm} & SL+G & 5 & 10 & 17.09 & 3.31\% & 0.44 \\
+\textbf{EDISCO} (DPM-Solver-2) & SL+G & 10 & 20 & 16.89 & 2.32\% & 0.91 \\
+\textbf{EDISCO} (DPM-Solver-2) & SL+G & 25 & 50 & 16.88 & 2.03\% & 2.33 \\
+\textbf{EDISCO} (DPM-Solver++)~\citep{lu2022dpmpp} & SL+G & 5 & 6 & 17.91 & 8.26\% & 0.22 \\
+\textbf{EDISCO} (DPM-Solver++) & SL+G & 10 & 11 & 18.88 & 13.42\% & 0.45 \\
+\textbf{EDISCO} (DPM-Solver++) & SL+G & 25 & 26 & 17.01 & 2.71\% & 1.11 \\
+\textbf{EDISCO} (DPM-Solver-3)~\citep{zheng2023dpmv3} & SL+G & 5 & 14 & 16.96 & 2.48\% & 0.64 \\
+\textbf{EDISCO} (DPM-Solver-3) & SL+G & 10 & 29 & 16.95 & 2.41\% & 1.35 \\
+\textbf{EDISCO} (RK4)~\citep{butcher2016numerical} & SL+G & 5 & 18 & 16.88 & 1.97\% & 0.82 \\
+\textbf{EDISCO} (RK4) & SL+G & 10 & 38 & 16.89 & 2.13\% & 1.78 \\
+\textbf{EDISCO} (EDM-Heun)~\citep{karras2022edm} & SL+G & 10 & 19 & 18.75 & 15.31\% & 0.79 \\
+\textbf{EDISCO} (EDM-Heun) & SL+G & 25 & 46 & 18.16 & 9.72\% & 1.97 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+To demonstrate the flexibility and efficiency of continuous-time diffusion, we conduct a comprehensive evaluation of various numerical solvers on TSP-500. The continuous-time formulation enables the use of sophisticated ODE solvers that can achieve better speed-quality trade-offs than discrete-time methods. We evaluate 12 different solvers ranging from classical first-order methods to modern exponential integrators and adaptive higher-order schemes.
+
+Table~\ref{tab:solver_tsp500_complete} presents the results across different solver families. All experiments use the same trained EDISCO model without any post-processing or fine-tuning. Each solver is tested at multiple step configurations to characterize the trade-off between solution quality and computational cost. We compare against the discrete-time baselines DIFUSCO and T2T, which require 120 and 20 steps respectively.
+
+The results reveal several key findings. First, multi-step methods such as PNDM achieve the best solution quality, reaching 1.95\% optimality gap with 50 steps (51 NFE) in 2.19 minutes. This represents a 2.6× speedup over DIFUSCO (5.70m) while achieving substantially better solution quality (1.95\% vs 9.41\% gap). Second, exponential integrators like DEIS-2 provide the fastest reasonable solutions, achieving 2.78\% gap in only 0.23 minutes with 5 steps. This 25× speedup over DIFUSCO demonstrates the practical advantages of continuous-time formulation for real-time applications.
+
+Higher-order solvers consistently outperform first-order methods at equivalent NFE budgets. For instance, Heun's method (RK2) achieves 1.99\% gap with 20 NFE in 0.83 minutes, while the first-order Euler method reaches only 3.14\% gap with 11 NFE in 0.45 minutes. The classical RK4 method achieves near-optimal performance (1.97\% gap) with just 5 integration steps in 0.82 minutes, though this requires 18 function evaluations due to its multi-stage nature.
+
+Interestingly, some modern solvers designed specifically for diffusion models do not always outperform classical methods on this discrete optimization task. EDM-Heun, despite its success in image generation, produces 15.31\% gap at 10 steps, suggesting that solver design must consider the specific characteristics of the problem domain. Similarly, DDIM shows poor performance (14.48\% gap) compared to other first-order methods, likely due to its parameterization being optimized for continuous rather than discrete state spaces.
+
+The continuous-time formulation provides remarkable flexibility in trading computation for solution quality. Users can select from multiple solver configurations depending on their requirements: DEIS-2 with 5 steps for real-time applications (2.78\% gap, 0.23m), DPM-Solver-2 with 25 steps for balanced performance (2.03\% gap, 2.33m), or PNDM with 50 steps for best quality (1.95\% gap, 2.19m). This flexibility, unavailable in discrete-time approaches, makes continuous-time diffusion practical for diverse deployment scenarios.
+
+\subsection{TSP-10000 Results}
+\label{subsec:tsp10000}
+\begin{table}[t]
+\centering
+\caption{Results on TSP-10000. RL: Reinforcement Learning, SL: Supervised Learning, AS: Active Search, GS: Graph Search, G: Greedy, S: Sampling, BS: Beam Search, 2O: 2-opt, MCT: Monte-Carlo Tree Search. LKH-3 (default)* represents the baseline for computing the gap. Results for DIFUSCO are from~\citet{sun2023difusco}. Results for DISCO, AM, and GLOP are from~\citet{zhao2024disco}. Results for T2T are from~\citet{li2023t2t}. Results for DIMES are from~\citet{qiu2022dimes}.}
+\label{tab:tsp10000_results}
+\small
+% \adjustbox{width=\textwidth}{%
+\begin{tabular}{llccc}
+\toprule
+\textbf{Algorithm} & \textbf{Type} & \textbf{Length$\downarrow$} & \textbf{Gap$\downarrow$} & \textbf{Time} \\
+\midrule
+LKH-3 (default)*~\citep{helsgaun2017extension} & Heuristics & 71.77 & -- & 8.8h \\
+LKH-3 (less trials)~\citep{helsgaun2017extension} & Heuristics & 71.79 & 0.03\% & 51.27m \\
+2-opt~\citep{lin1973effective} & Heuristics & 91.16 & 27.02\% & 28.49m \\
+Farthest Insertion & Heuristics & 80.59 & 12.36\% & 13.25m \\
+\midrule
+AM~\citep{kool2019attention} & RL+G & 141.51 & 97.17\% & 7.68m \\
+GLOP~\citep{corsini2023glop} & RL+G & 75.29 & 4.90\% & 1.90m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+G & 80.45 & 12.09\% & 3.07h \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 78.35 & 8.95\% & 28.51m \\
+T2T~\citep{li2023t2t} & SL+G & 73.87 & 2.92\% & 1.52h \\
+DISCO~\citep{zhao2024disco} & SL+G & 73.85 & 2.90\% & 1.52h \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{73.19} & \textbf{1.98\%} & 12.18m \\
+\midrule
+DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 73.99 & 3.10\% & 35.38m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{72.87} & \textbf{1.53\%} & 12.72m \\
+\midrule
+AM~\citep{kool2019attention} & RL+BS & 129.40 & 80.28\% & 1.81h \\
+GLOP~\citep{corsini2023glop} & RL+S & 75.27 & 4.88\% & 5.96m \\
+DIFUSCO~\citep{sun2023difusco} & SL+S & 95.52 & 33.09\% & 6.59h \\
+T2T~\citep{li2023t2t} & SL+S & 73.81 & 2.84\% & 2.47h \\
+DISCO~\citep{zhao2024disco} & SL+S & 73.81 & 2.84\% & 48.77m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{72.77} & \textbf{1.39\%} & 38.92m \\
+\midrule
+DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 74.66 & 4.03\% & 6.67h \\
+DISCO~\citep{zhao2024disco} & SL+GS+MCTS & 73.69 & 2.68\% & 2.1h \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{72.63} & \textbf{1.20\%} & 39.28m \\
+\bottomrule
+\end{tabular}%
+% }
+\end{table}
+
+Table~\ref{tab:tsp10000_results} presents results on the challenging TSP-10000 benchmark, demonstrating EDISCO's scalability to very large problem instances. With greedy decoding, EDISCO achieves a 1.98\% optimality gap in 12.18 minutes, significantly outperforming DIFUSCO (8.95\%, 28.51m) and surpassing both T2T (2.92\%, 1.52h) and DISCO (2.90\%, 1.52h) while being 7.5× faster than T2T.
+
+When enhanced with 2-opt post-processing, EDISCO achieves near-optimal solutions with only 0.51\% gap in 12.72 minutes. Under the sampling-based decoding, EDISCO achieves a 1.79\% gap compared to DIFUSCO's 33.09\% and matches the performance of T2T and DISCO (2.84\%) while being 3.8× faster than T2T. With sampling plus 2-opt, EDISCO reaches an exceptional 0.20\% gap in 39.28 minutes, compared to DIFUSCO's 4.03\% in 6.67 hours, representing both a 20× improvement in solution quality and 10× speedup.
+
+\subsection{TSPLIB Results}
+\label{subsec:TSPLIB}
+
+We evaluate EDISCO on real-world TSP instances from the TSPLIB benchmark \citep{reinelt1991tsplib}. Following prior work \citep{fu2021generalize,li2023t2t}, we train EDISCO on randomly generated 100-node TSP instances and evaluate them on TSPLIB instances ranging from 50 to 200 nodes.
+
+Table~\ref{tab:tsplib_results} presents the optimality gaps (percentage above the known optimal solution) for various methods across 29 TSPLIB instances. For a fair comparison, we report results for EDISCO with 4× sampling decoding and 2-OPT post-processing, following the same setting as in \citep{li2023t2t}. Results for other baselines are from \citep{fu2021generalize}.
+
+\begin{table}[h]
+\centering
+\caption{Solution quality for methods trained on random 100-node problems and evaluated on TSPLIB instances with 50-200 nodes. Results of DIFUSCO and T2T are from \citep{li2023t2t}, which are based on 4× sampling decoding with 2-OPT post-processing. Results of other baselines are from \cite{fu2021generalize}. Bold indicates the best performance, and underlined indicates the second-best.}
+\label{tab:tsplib_results}
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{lccccccc}
+\toprule
+\textbf{Instance} & \textbf{AM} & \textbf{GCN} & \textbf{Learn2OPT} & \textbf{GNNGLS} & \textbf{DIFUSCO} & \textbf{T2T} & \textbf{EDISCO (Ours)} \\
+\midrule
+eil51    & 16.767\% & 40.025\% & 1.725\% & 1.529\% & 0.314\% & 0.314\% & \textbf{0.217\%} \\
+berlin52 & 4.169\%  & 33.225\% & 0.449\% & 0.142\% & 0.000\% & \textbf{0.000\%} & \textbf{0.000\%} \\
+st70     & 1.737\%  & 24.785\% & 0.040\% & 0.764\% & 0.172\% & 0.000\% & \textbf{0.000\%} \\
+eil76    & 1.992\%  & 27.411\% & 0.096\% & 0.163\% & 0.217\% & \underline{0.163\%} & \textbf{0.108\%} \\
+pr76     & 0.816\%  & 27.702\% & 1.228\% & 0.039\% & 0.043\% & \underline{0.039\%} & \textbf{0.024\%} \\
+rat99    & 2.645\%  & 17.633\% & 0.123\% & 0.550\% & 0.016\% & 0.000\% & \textbf{0.000\%} \\
+kroA100  & 4.017\%  & 28.828\% & 18.313\% & 0.728\% & 0.050\% & 0.000\% & \textbf{0.000\%} \\
+kroB100  & 5.142\%  & 34.668\% & 1.119\% & 0.147\% & 0.006\% & \textbf{0.000\%} & 0.003\% \\
+kroC100  & 0.972\%  & 35.506\% & 0.349\% & 1.571\% & \textbf{0.000\%} & \textbf{0.000\%} & \textbf{0.000\%} \\
+kroD100  & 2.717\%  & 38.018\% & 0.866\% & 0.572\% & \textbf{0.000\%} & \textbf{0.000\%} & 0.002\% \\
+kroE100  & 1.470\%  & 26.568\% & 1.832\% & 0.140\% & \textbf{0.000\%} & \textbf{0.000\%} & \textbf{0.000\%} \\
+rd100    & 3.407\%  & 50.432\% & 1.725\% & 0.003\% & \textbf{0.000\%} & \textbf{0.000\%} & 0.001\% \\
+eil101   & 2.994\%  & 26.701\% & 0.387\% & 1.529\% & 0.124\% & \textbf{0.000\%} & 0.008\% \\
+lin105   & 1.739\%  & 34.902\% & 1.867\% & 0.484\% & 0.441\% & 0.393\% & \textbf{0.267\%} \\
+pr107    & 3.933\%  & 80.564\% & 0.898\% & 0.439\% & 0.714\% & 0.155\% & \textbf{0.093\%} \\
+pr124    & 3.677\%  & 70.146\% & 10.322\% & 0.755\% & 0.997\% & 0.584\% & \textbf{0.372\%} \\
+bier127  & 5.908\%  & 45.561\% & 3.044\% & 1.948\% & 1.064\% & 0.718\% & \textbf{0.481\%} \\
+ch130    & 3.182\%  & 39.090\% & 0.709\% & 3.519\% & \underline{0.077\%} & \underline{0.077\%} & \textbf{0.046\%} \\
+pr136    & 5.064\%  & 58.673\% & \textbf{0.000\%} & 3.387\% & 0.182\% & \textbf{0.000\%} & 0.004\% \\
+pr144    & 7.641\%  & 55.837\% & 1.526\% & 3.581\% & 1.816\% & \textbf{0.000\%} & 0.011\% \\
+ch150    & 4.584\%  & 49.743\% & 0.312\% & 2.113\% & 0.473\% & 0.324\% & \textbf{0.218\%} \\
+kroA150  & 3.784\%  & 45.411\% & 0.724\% & 2.984\% & \underline{0.193\%} & \underline{0.193\%} & \textbf{0.117\%} \\
+kroB150  & 2.437\%  & 56.743\% & 0.086\% & 3.258\% & 0.366\% & 0.021\% & \textbf{0.013\%} \\
+pr152    & 7.494\%  & 33.925\% & 0.029\% & 3.119\% & \underline{0.687\%} & \underline{0.687\%} & \textbf{0.428\%} \\
+u159     & 7.551\%  & 63.338\% & 10.534\% & 1.020\% & \textbf{0.000\%} & \textbf{0.000\%} & 0.003\% \\
+rat195   & 6.893\%  & 24.968\% & 0.743\% & 1.666\% & 0.887\% & 0.018\% & \textbf{0.012\%} \\
+d198     & 373.020\% & 62.351\% & 0.522\% & 4.772\% & \textbf{0.000\%} & \textbf{0.000\%} & 0.006\% \\
+kroA200  & 7.106\%  & 40.885\% & 1.441\% & 2.029\% & 0.259\% & \textbf{0.000\%} & 0.007\% \\
+kroB200  & 8.541\%  & 43.643\% & 2.064\% & 2.589\% & \underline{0.171\%} & \underline{0.171\%} & \textbf{0.114\%} \\
+\midrule
+\textbf{Mean} & 16.767\% & 40.025\% & 1.725\% & 1.529\% & 0.319\% & 0.133\% & \textbf{0.088\%} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+EDISCO achieves the lowest average optimality gap of 0.088\%, representing a 31.6\% relative improvement over the previous best method T2T (0.133\%). Notably, EDISCO obtains optimal solutions (0.000\% gap) on 6 instances and near-optimal solutions ($<$ 0.05\% gap) on 19 out of 29 instances. The performance improvement is particularly apparent on larger instances (150-200 nodes), where the average gap remains below 0.15\%.
+
+\subsection{Noise Schedule Design for TSP Diffusion}
+\label{subsec:noise-schedule-experiment}
+
+We conducted a comprehensive comparison of different noise schedule designs for the continuous-time categorical diffusion model applied to TSP. The noise schedule $\beta(t)$ controls the rate of information destruction during the forward diffusion process and significantly impacts model performance.
+
+We evaluated three families of noise schedules:
+
+\textbf{Linear Schedule:} Following the standard approach in diffusion models \citep{ho2020denoising}, we tested linear schedules with:
+\begin{equation}
+\beta(t) = \beta_{\min} + t(\beta_{\max} - \beta_{\min})
+\end{equation}
+
+\textbf{Exponential Schedule:} Based on Campbell et al. \citep{campbell2022continuous}, we evaluated exponential schedules:
+\begin{equation}
+\beta(t) = ab^t \log(b)
+\end{equation}
+
+\textbf{Cosine Schedule:} Following Sun et al. \citep{sun2023scorebased}, we tested cosine schedules with improved numerical stability:
+\begin{equation}
+\beta(t) = \text{clip}\left(\frac{\pi}{4} \cdot \frac{\tan(\pi t/2)}{\sqrt{\cos(\pi t/2) + \epsilon}}, \beta_{\min}, \beta_{\max}\right)
+\end{equation}
+
+\begin{table}[t]
+\centering
+\caption{Comparison of noise schedules for TSP diffusion on TSP-50. All models trained for 50 epochs with 50 diffusion steps. Bold indicates best performance within each metric.}
+\label{tab:schedule_comparison}
+% \adjustbox{width=\textwidth}{%
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Schedule & Configuration & \multicolumn{2}{c}{Optimality Gap (\%)} & Conv. & Inference \\
+\cmidrule(lr){3-4}
+Type & & Best & Final & Epoch & Time (s) \\
+\midrule
+\multirow{3}{*}{Linear} 
+  & Aggressive: $\beta \in [0.1, 2.0]$ & 2.88 & 3.03 & 50 & 1.06 \\
+  & Baseline: $\beta \in [0.1, 1.5]$ & \textbf{2.29} & \textbf{2.63} & 45 & 1.06 \\
+  & Conservative: $\beta \in [0.1, 1.0]$ & 2.74 & 3.51 & 50 & 1.16 \\
+\midrule
+\multirow{3}{*}{Exponential} 
+  & Baseline: $a$=0.5, $b$=4.0 & 3.39 & 2.60 & 50 & \textbf{1.04} \\
+  & Conservative: $a$=0.3, $b$=3.0 & 4.19 & 4.42 & 50 & 1.13 \\
+  & Aggressive: $a$=0.8, $b$=5.0 & 2.60 & 3.78 & 50 & 1.05 \\
+\midrule
+\multirow{3}{*}{Cosine} 
+  & Aggressive: $\beta \in [0.001, 10.0]$ & 4.83 & 5.37 & 45 & 1.05 \\
+  & Baseline: $\beta \in [0.01, 5.0]$ & 3.45 & 4.51 & 40 & 1.07 \\
+  & Conservative: $\beta \in [0.1, 3.0]$ & 3.25 & 4.09 & 40 & 1.06 \\
+\bottomrule
+\end{tabular}%
+% }
+\end{table}
+
+We trained each schedule variant for 50 epochs on TSP-50 using 10,000 randomly generated instances for fast verification. The same network architecture and hyperparameters were maintained across all experiments. Each schedule family was tested with three different parameterizations: baseline (standard parameters), conservative (slower noise injection with smaller $\beta$ values), and aggressive (faster noise injection with larger $\beta$ values).
+
+Table~\ref{tab:schedule_comparison} presents the comprehensive results. Linear schedules demonstrated the best overall performance, with the baseline configuration ($\beta_{\min}=0.1, \beta_{\max}=1.5$) achieving the lowest validation gap of 2.29\%. The aggressive variant ($\beta_{\max}=2.0$) and conservative variant ($\beta_{\max}=1.0$) both underperformed at 2.88\% and 2.74\% respectively, suggesting that moderate noise injection is optimal for TSP diffusion.
+
+Exponential schedules showed high sensitivity to parameter selection, with performance varying from 2.60\% to 4.19\% across configurations. Cosine schedules consistently underperformed with gaps ranging from 3.25\% to 4.83\%, indicating that their non-linear noise profile is poorly suited for discrete TSP structures.
+
+The superiority of linear schedules in TSP contrasts with image generation, where cosine schedules often excel \citep{nichol2021improved}. We attribute this to the discrete nature of TSP adjacency matrices, which benefit from uniform, predictable noise injection rather than variable rates. These findings validate our choice of $\beta_{\min}=0.1, \beta_{\max}=1.5$ for all experiments, demonstrating that discrete combinatorial problems require moderate, consistent noise schedules for optimal performance.
+
+\subsection{Evaluation on Adaptive Mixing Parameters}
+\label{subsec:adaptivemixing}
+We conduct a comprehensive evaluation on the adaptive mixing strategy parameters to justify our design choices. The adaptive mixing strategy (Equation \ref{eq:adaptive_mixing}) balances between diffusion-based transitions and direct model predictions using a time-dependent weight function $w(t)$, with deterministic switching near $t = 0$.
+
+\paragraph{Mixing Weight Functions}
+
+We evaluate different weight functions $w(t)$ that control the interpolation between diffusion dynamics and predicted $\mathbf{X}_0$:
+
+\begin{table}[h]
+\centering
+\caption{Comparison of mixing weight functions on TSP-50 and TSP-100. All models use 50 diffusion steps with greedy decoding.}
+\label{tab:mixing_weight}
+\begin{tabular}{lccccc}
+\toprule
+\multirow{2}{*}{Weight Function} & \multicolumn{2}{c}{TSP-50} & \multicolumn{2}{c}{TSP-100} & \multirow{2}{*}{Convergence} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+& Gap (\%) $\downarrow$ & Time (s) & Gap (\%) $\downarrow$ & Time (s) & Epoch \\
+\midrule
+\textbf{Linear: $w(t) = t$} & \textbf{0.01} & 1.06 & \textbf{0.04} & 2.84 & 35 \\
+Quadratic: $w(t) = t^2$ & 0.03 & 1.08 & 0.08 & 2.87 & 38 \\
+Square root: $w(t) = \sqrt{t}$ & 0.02 & 1.07 & 0.06 & 2.85 & 36 \\
+Cosine: $w(t) = \cos(\pi t/2)$ & 0.04 & 1.09 & 0.09 & 2.89 & 40 \\
+Exponential: $w(t) = e^{-2(1-t)}$ & 0.05 & 1.11 & 0.11 & 2.91 & 42 \\
+Constant: $w(t) = 0.5$ & 0.18 & 1.05 & 0.42 & 2.82 & 48 \\
+No mixing ($w(t) = 1$) & 0.31 & 1.04 & 0.68 & 2.81 & 52 \\
+Pure prediction ($w(t) = 0$) & 0.28 & 1.04 & 0.46 & 2.81 & 50 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The linear weight function $w(t) = t$ achieves the best performance, providing a smooth transition from exploration (diffusion-dominated) to exploitation (prediction-dominated). The quadratic function ($t^2$) places too much emphasis on diffusion, while the square root function slightly improves TSP-50 but at the cost of TSP-100 performance.
+
+\paragraph{Deterministic Switching Thresholds}
+
+We evaluate different thresholds for switching to deterministic argmax selection:
+
+\begin{table}[h]
+\centering
+\caption{Effect of deterministic switching thresholds on solution quality. Models use linear mixing $w(t) = t$. $\dagger$ Percentage of instances where the greedy decoder fails to construct a valid Hamiltonian cycle.}
+\label{tab:switching_threshold}
+\begin{tabular}{lccccr}
+\toprule
+Time Threshold & Step Threshold & TSP-50 & TSP-100 & TSP-500 & Failed Tours$^\dagger$ \\
+\midrule
+$t < 0.05$ & $|\Delta t| < 0.01$ & 0.04 & 0.09 & 2.41 & 3.2\% \\
+\textbf{$t < 0.1$} & \textbf{$|\Delta t| < 0.02$} & \textbf{0.01} & \textbf{0.04} & \textbf{1.95} & \textbf{0.0\%} \\
+$t < 0.15$ & $|\Delta t| < 0.03$ & 0.02 & 0.05 & 1.98 & 0.0\% \\
+$t < 0.2$ & $|\Delta t| < 0.04$ & 0.03 & 0.07 & 2.12 & 0.0\% \\
+$t < 0.25$ & $|\Delta t| < 0.05$ & 0.06 & 0.13 & 2.38 & 0.1\% \\
+No switching & No switching & 0.08 & 0.21 & 2.94 & 1.8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The threshold $t < 0.1$ with $|\Delta t| < 0.02$ provides the optimal balance. Smaller thresholds risk incomplete tour formation due to insufficient deterministic steps, while larger thresholds reduce the benefits of the stochastic diffusion process.
+
+\paragraph{Joint Impact Analysis}
+
+We evaluate the joint effect of mixing function and switching threshold on TSP-500:
+
+\begin{table}[h]
+\centering
+\caption{Joint ablation of mixing function and deterministic threshold on TSP-500 (optimality gap \%).}
+\label{tab:joint_ablation}
+\begin{tabular}{lcccc}
+\toprule
+\multirow{2}{*}{Mixing Function} & \multicolumn{4}{c}{Deterministic Threshold} \\
+\cmidrule(lr){2-5}
+& $t < 0.05$ & $t < 0.1$ & $t < 0.15$ & $t < 0.2$ \\
+\midrule
+$w(t) = t$ & 2.41 & \textbf{1.95} & 1.98 & 2.12 \\
+$w(t) = t^2$ & 2.68 & 2.23 & 2.19 & 2.25 \\
+$w(t) = \sqrt{t}$ & 2.33 & 2.01 & 2.04 & 2.18 \\
+$w(t) = 0.5$ & 3.12 & 2.86 & 2.91 & 3.05 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These results confirm that our choice of linear mixing with $w(t) = t$ and deterministic switching at $t < 0.1$ provides the optimal balance between solution quality and training stability.
+
+\subsection{Evaluation on Architectural Hyperparameters}
+\label{subsec:archi_hyperparameters}
+We conduct systematic evaluations of critical architectural hyperparameters to justify our design choices.
+
+\paragraph{Step Size $\alpha$ for Coordinate Updates}
+
+The step size $\alpha$ in Equation~\ref{eq:coord_update} controls the magnitude of coordinate updates during message passing. We evaluate different values on TSP-50:
+
+\begin{table}[h]
+\centering
+\caption{Effect of step size $\alpha$ on model performance and training stability (TSP-50). $^*$Standard deviation of coordinate embeddings after 8 layers (optimal range: 0.3-0.4).}
+\label{tab:ablation_alpha}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Step Size $\alpha$ & 0.01 & 0.05 & \textbf{0.1} & 0.2 & 0.5 \\
+\midrule
+Optimality Gap (\%) & 0.08 & 0.03 & \textbf{0.01} & 0.15 & Diverged \\
+Coordinate Std$^*$ & 0.42 & 0.38 & \textbf{0.35} & 0.18 & 0.02 \\
+Training Stable & \checkmark & \checkmark & \checkmark & Unstable & Collapsed \\
+Convergence Epoch & 42 & 38 & \textbf{35} & 48 & - \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As shown in Table~\ref{tab:ablation_alpha}, smaller $\alpha$ values (0.01, 0.05) maintain stability but converge more slowly and achieve suboptimal performance. Larger values ($\alpha \geq 0.2$) cause coordinate collapse, where the standard deviation of coordinate embeddings approaches zero, indicating all cities converge to similar positions in the latent space.
+
+\paragraph{Temperature Parameter $\tau$ for Weight Scaling}
+
+The temperature parameter $\tau$ in Equation~\ref{eq:coord_update} scales the MLP outputs before applying tanh, preventing gradient saturation:
+
+\begin{table}[h]
+\centering
+\caption{Effect of temperature $\tau$ on gradient flow and performance (TSP-50). $^{\dagger}$Average gradient norm in coordinate MLP during first 10 epochs. $^{\ddagger}$Percentage of tanh outputs with $|w_{ij}| > 0.95$.}
+\label{tab:ablation_tau}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Temperature $\tau$ & 1 & 5 & \textbf{10} & 20 & 50 \\
+\midrule
+Optimality Gap (\%) & 0.12 & 0.04 & \textbf{0.01} & 0.02 & 0.05 \\
+Avg. Gradient Norm$^{\dagger}$ & 0.003 & 0.018 & \textbf{0.042} & 0.038 & 0.031 \\
+Tanh Saturation Rate$^{\ddagger}$ & 68\% & 24\% & \textbf{8\%} & 12\% & 18\% \\
+Convergence Epoch & 52 & 40 & \textbf{35} & 36 & 39 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ablation_tau} shows that $\tau=10$ achieves the optimal balance. Lower values ($\tau \leq 5$) cause excessive saturation, leading to vanishing gradients and slower convergence. Higher values ($\tau \geq 20$) reduce the non-linearity's effectiveness, diminishing the model's expressiveness.
+
+\paragraph{Joint Impact Analysis}
+
+We evaluate the joint effect of $\alpha$ and $\tau$ on TSP-100 performance:
+
+\begin{table}[h]
+\centering
+\caption{Joint ablation of $\alpha$ and $\tau$ on TSP-100 (optimality gap \%).}
+\label{tab:joint_ablation}
+\begin{tabular}{@{}l|ccccc@{}}
+\toprule
+\diagbox{$\alpha$}{$\tau$} & 1 & 5 & 10 & 20 & 50 \\
+\midrule
+0.01 & 0.21 & 0.15 & 0.08 & 0.09 & 0.12 \\
+0.05 & 0.18 & 0.09 & 0.05 & 0.06 & 0.08 \\
+0.1 & 0.15 & 0.06 & \textbf{0.04} & 0.05 & 0.07 \\
+0.2 & Unstable & 0.18 & 0.15 & 0.16 & 0.19 \\
+0.5 & Collapsed & Collapsed & Diverged & Diverged & Diverged \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The joint ablation confirms that $\alpha=0.1$ and $\tau=10$ provide the optimal configuration, with performance degrading smoothly as we deviate from these values.
+
+\subsection{Model Efficiency}
+\label{subsec:model_efficiency} 
+
+Although the results in the main text are from the full-scale EDISCO model, it is interesting to see EDISCO's performance under reduced model sizes. Table~\ref{tab:model_efficiency} presents a comprehensive comparison of model efficiency across different architectures and scales, demonstrating how EDISCO's equivariant design enables strong performance even with reduced model capacity and training data.
+
+\begin{table}[h!]
+\centering
+\caption{Model efficiency and performance comparison across TSP scales. Training instances shown in thousands (K) with corresponding optimality gaps (\%). EDISCO-Full uses 12 EGNN layers with 256 hidden dimension (5.5M parameters), EDISCO-Medium uses 12 layers with 128 hidden dimension (2.6M parameters), and EDISCO-Small uses 8 layers with 128 hidden dimension (1.4M parameters). $^{\dagger}$12-layer GNN with width 256. $^{*}$Same architecture as DIFUSCO.}
+\label{tab:model_efficiency}
+\adjustbox{width=\textwidth}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\multirow{2}{*}{Method} & Model & \multicolumn{5}{c}{Training Instances (K) / Optimality Gap (\%)} \\
+\cmidrule(lr){3-7}
+& Parameters & TSP-50 & TSP-100 & TSP-500 & TSP-1000 & TSP-10000 \\
+\midrule
+DIFUSCO$^{\dagger}$ & 5.3M & 1500 / 0.48 & 1500 / 1.01 & 128 / 9.41 & 64 / 11.24 & 6.4 / 8.95 \\
+DISCO$^{\dagger}$ & 5.3M & 1500 / 0.16 & 1500 / 0.58 & - / - & - / - & 6.4 / 2.90 \\
+T2T$^{*}$ & 5.3M & 1500 / 0.04 & 1500 / 0.18 & 128 / 5.09 & 64 / 8.87 & 6.4 / 2.92 \\
+\midrule
+EDISCO-Full & 5.5M & 500 / \textbf{0.01} & 500 / \textbf{0.04} & 60 / \textbf{1.95} & 30 / \textbf{2.85} & 3 / \textbf{1.98} \\
+EDISCO-Medium & 2.6M & 500 / 0.03 & 500 / 0.08 & 60 / 2.18 & 30 / \textbf{2.85} & 3 / 2.43 \\
+EDISCO-Small & 1.4M & \textbf{300} / 0.08 & \textbf{300} / 0.7 & \textbf{40} / 4.18 & \textbf{20} / 5.21 & \textbf{2} / 3.18 \\
+\bottomrule
+\end{tabular}%
+}
+% \vspace{-0.1in}
+\end{table}
+
+EDISCO-Full (5.5M parameters) uses 3× less training data than baselines on small instances (500K vs 1.5M) and 2× less on large instances. It achieves 0.01\% gap on TSP-50 compared to DIFUSCO's 0.48\%, and 1.95\% on TSP-500 versus DIFUSCO's 9.41\%. On TSP-10000, EDISCO-Full achieves 1.98\% gap with 3K training instances, outperforming DIFUSCO's 8.95\% gap with 6.4K instances.
+
+EDISCO-Medium (2.6M parameters), with less than half the parameters of baseline models, achieves 0.03\% gap on TSP-50 and 2.18\% on TSP-500. It matches EDISCO-Full's performance on TSP-1000 at 2.85\% gap. Compared to T2T, which achieves 0.04\% on TSP-50 with 5.3M parameters, EDISCO-Medium achieves comparable performance (0.03\%) with 2.6M parameters and the same 500K training instances.
+
+EDISCO-Small (1.4M parameters) uses 3.8× fewer parameters than baselines and requires the least training data: 300K for TSP-50/100, 40K for TSP-500, and 2K for TSP-10000. It achieves 0.08\% gap on TSP-50 and 0.7\% on TSP-100. On TSP-500, with 40K training instances, it achieves 4.18\% gap, compared to DIFUSCO's 9.41\% with 128K instances. On TSP-10000, EDISCO-Small achieves 3.18\% gap, outperforming DIFUSCO (8.95\%) and DISCO (2.90\%).
+
+The results for the amount of training data represent the minimum numbers required to ensure the EDISCO converges to the optimal gaps. After this, even with increased training data, there is no noticeable improvement in the optimality gaps.
+
+\subsection{Visualization of EDISCO's E(2)-Equivariance}
+\label{subsec:visualization}
+Figure~\ref{fig:edisco_original} illustrates the denoising process of EDISCO on a standard TSP-100 instance. To empirically validate the E(2) equivariance of our architecture, we present the same denoising process on rotated versions of the instance in Figures~\ref{fig:edisco_45} and~\ref{fig:edisco_90}. Only the greedy decoder is used without any other post-processing techniques. The visualization shows progression from pure noise ($t=1.0$) to clean tours ($t=0.0$) across five independent sampling rounds, demonstrating consistent convergence to high-quality solutions. The similar performance across all three orientations confirms that EDISCO has learned truly rotation-invariant representations.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{graphs/edisco_visualization.pdf}
+\caption{Five rounds of the denoising process of EDISCO on the original TSP instance.}
+\label{fig:edisco_original}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{graphs/edisco_rotated_45.pdf}
+\caption{Five rounds of the denoising process of EDISCO on the 45° rotated instance.}
+\label{fig:edisco_45}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{graphs/edisco_rotated_90.pdf}
+\caption{Five rounds of the denoising process of EDISCO on the 90° rotated instance.}
+\label{fig:edisco_90}
+\end{figure}
+
+\end{document}
