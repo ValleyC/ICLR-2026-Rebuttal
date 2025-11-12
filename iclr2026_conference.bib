@@ -1,0 +1,994 @@
+% TSP Solvers and Baselines
+@article{applegate2006concorde,
+  title={Concorde {TSP} solver},
+  author={Applegate, David and Bixby, Robert and Chvatal, Vasek and Cook, William},
+  journal={Available at: http://www.math.uwaterloo.ca/tsp/concorde},
+  year={2006}
+}
+
+@techreport{helsgaun2017extension,
+  title={An extension of the {Lin-Kernighan-Helsgaun TSP} solver for constrained traveling salesman and vehicle routing problems},
+  author={Helsgaun, Keld},
+  institution={Roskilde University},
+  year={2017}
+}
+
+% Neural TSP Solvers
+@inproceedings{kool2019attention,
+  title={Attention, learn to solve routing problems!},
+  author={Kool, Wouter and Van Hoof, Herke and Welling, Max},
+  booktitle={International Conference on Learning Representations},
+  year={2019}
+}
+
+@article{joshi2022learning,
+  title={Learning the travelling salesperson problem requires rethinking generalization},
+  author={Joshi, Chaitanya K and Cappart, Quentin and Rousseau, Louis-Martin and Laurent, Thomas},
+  journal={Constraints},
+  pages={1--29},
+  year={2022}
+}
+
+@inproceedings{fu2021generalize,
+  title={Generalize a small pre-trained model to arbitrarily large {TSP} instances},
+  author={Fu, Zhang-Hua and Qiu, Kai-Bin and Zha, Hongyuan},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={35},
+  pages={7474--7482},
+  year={2021}
+}
+
+% Diffusion Models for Optimization
+@inproceedings{graikos2022diffusion,
+  title={Diffusion models as plug-and-play priors},
+  author={Graikos, Alexandros and Malkin, Nikolay and Jojic, Nebojsa and Samaras, Dimitris},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2022}
+}
+
+@inproceedings{sun2023difusco,
+  title={{DIFUSCO}: Graph-based Diffusion Solvers for Combinatorial Optimization},
+  author={Sun, Zhiqing and Yang, Yiming},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2023}
+}
+
+% Equivariance and Geometric Deep Learning
+@inproceedings{ouyang2021generalization,
+  title={Generalization in Deep {RL} for {TSP} Problems via Equivariance and Local Search},
+  author={Ouyang, Wenbin and Wang, Yisen and Han, Shaochen and others},
+  booktitle={arXiv preprint arXiv:2110.03595},
+  year={2021}
+}
+
+@article{bronstein2021geometric,
+  title={Geometric deep learning: Grids, groups, graphs, geodesics, and gauges},
+  author={Bronstein, Michael M and Bruna, Joan and Cohen, Taco and Veli{\v{c}}kovi{\'c}, Petar},
+  journal={arXiv preprint arXiv:2104.13478},
+  year={2021}
+}
+
+@inproceedings{cohen2016group,
+  title={Group equivariant convolutional networks},
+  author={Cohen, Taco and Welling, Max},
+  booktitle={International Conference on Machine Learning},
+  pages={2990--2999},
+  year={2016}
+}
+
+@article{batzner2022e3equivariant,
+  title={{E(3)}-equivariant graph neural networks for data-efficient and accurate interatomic potentials},
+  author={Batzner, Simon and Musaelian, Albert and Sun, Lixin and others},
+  journal={Nature Communications},
+  volume={13},
+  number={1},
+  pages={2453},
+  year={2022}
+}
+
+@article{nordenfors2023optimization,
+  title={Optimization Dynamics of Equivariant and Augmented Neural Networks},
+  author={Nordenfors, Oskar and Ohlsson, Fredrik and Flinth, Axel},
+  journal={arXiv preprint arXiv:2303.13458},
+  year={2023}
+}
+
+@inproceedings{esteves2018learning,
+  title={Learning {SO(3)} equivariant representations with spherical {CNNs}},
+  author={Esteves, Carlos and Allen-Blanchette, Christine and Makadia, Ameesh and Daniilidis, Kostas},
+  booktitle={European Conference on Computer Vision},
+  pages={52--68},
+  year={2018}
+}
+
+@article{brehmer2024does,
+  title={Does equivariance matter at scale?},
+  author={Brehmer, Johann and Behrends, S{\"o}nke and de Haan, Pim and Cohen, Taco},
+  journal={arXiv preprint arXiv:2410.23179},
+  year={2024}
+}
+
+% Discrete Diffusion Models
+@inproceedings{austin2021structured,
+  title={Structured denoising diffusion models in discrete state-spaces},
+  author={Austin, Jacob and Johnson, Daniel D and Ho, Jonathan and Tarlow, Daniel and van den Berg, Rianne},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={34},
+  pages={17981--17993},
+  year={2021}
+}
+
+@inproceedings{campbell2022continuous,
+  title={A continuous time framework for discrete denoising models},
+  author={Campbell, Andrew and Benton, Joe and De Bortoli, Valentin and Rainforth, Tom and Deligiannidis, George and Doucet, Arnaud},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2022}
+}
+
+@article{ren2025fast,
+  title={Fast Solvers for Discrete Diffusion Models: Theory and Applications of High-Order Algorithms},
+  author={Ren, Yinuo and Chen, Haoxuan and Zhu, Yuchen and Guo, Wei and Chen, Yongxin and Rotskoff, Grant M and Tao, Molei and Ying, Lexing},
+  journal={arXiv preprint arXiv:2502.00234},
+  year={2025}
+}
+
+@article{zhang2024convergence,
+  title={Convergence of Score-Based Discrete Diffusion Models: A Discrete-Time Analysis},
+  author={Zhang, Zikun and Chen, Zixiang and Gu, Quanquan},
+  journal={arXiv preprint arXiv:2410.02321},
+  year={2024}
+}
+
+@article{lu2024simplifying,
+  title={Simplifying, Stabilizing and Scaling Continuous-Time Consistency Models},
+  author={Lu, Cheng and Song, Yang},
+  journal={arXiv preprint arXiv:2410.11081},
+  year={2024}
+}
+
+% Continuous-Time Theory
+@book{anderson1991continuous,
+  title={Continuous-time {Markov} chains: an applications-oriented approach},
+  author={Anderson, William J},
+  year={1991},
+  publisher={Springer Science \& Business Media}
+}
+
+@inproceedings{song2021scorebased,
+  title={Score-based generative modeling through stochastic differential equations},
+  author={Song, Yang and Sohl-Dickstein, Jascha and Kingma, Diederik P and Kumar, Abhishek and Ermon, Stefano and Poole, Ben},
+  booktitle={International Conference on Learning Representations},
+  year={2021}
+}
+
+@article{sun2023scorebased,
+  title={Score-based Continuous-time Discrete Diffusion Models},
+  author={Sun, Haoran and Yu, Lijun and Dai, Bo and Schuurmans, Dale and Dai, Hanjun},
+  journal={International Conference on Learning Representations},
+  year={2023}
+}
+
+@article{dieleman2022continuous,
+  title={Continuous diffusion for categorical data},
+  author={Dieleman, Sander and Sartran, Laurent and Roshannai, Arman and others},
+  journal={arXiv preprint arXiv:2211.15089},
+  year={2022}
+}
+
+@article{zhao2024unified,
+  title={Unified Discrete Diffusion for Categorical Data},
+  author={Zhao, Lingxiao and others},
+  journal={arXiv preprint arXiv:2402.03701},
+  year={2024}
+}
+
+% For massive training data requirements
+@inproceedings{kool2019attention,
+  title={Attention, learn to solve routing problems!},
+  author={Kool, Wouter and Van Hoof, Herke and Welling, Max},
+  booktitle={International Conference on Learning Representations},
+  year={2019}
+}
+
+@inproceedings{kwon2020pomo,
+  title={{POMO}: Policy optimization with multiple optima for reinforcement learning},
+  author={Kwon, Yeong-Dae and Choo, Jinho and Kim, Byoungjip and Yoon, Iljoo and Gwon, Youngjune and Min, Seungjai},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={21188--21198},
+  year={2020}
+}
+
+% For high-quality optimal/near-optimal solutions supervision
+@article{joshi2022learning,
+  title={Learning the travelling salesperson problem requires rethinking generalization},
+  author={Joshi, Chaitanya K and Cappart, Quentin and Rousseau, Louis-Martin and Laurent, Thomas},
+  journal={Constraints},
+  pages={1--29},
+  year={2022}
+}
+
+% For large model architectures
+@article{bresson2021transformer,
+  title={The transformer network for the traveling salesman problem},
+  author={Bresson, Xavier and Laurent, Thomas},
+  journal={arXiv preprint arXiv:2103.03012},
+  year={2021}
+}
+
+@article{xin2021multi,
+  title={Multi-decoder attention model with embedding glimpse for solving vehicle routing problems},
+  author={Xin, Liang and Song, Wen and Cao, Zhiguang and Zhang, Jie},
+  journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={35},
+  number={13},
+  pages={12042--12049},
+  year={2021}
+}
+
+@inproceedings{fu2021generalize,
+  title={Generalize a small pre-trained model to arbitrarily large {TSP} instances},
+  author={Fu, Zhang-Hua and Qiu, Kai-Bin and Zha, Hongyuan},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={35},
+  pages={7474--7482},
+  year={2021}
+}
+
+% Autoregressive TSP solvers
+@inproceedings{vinyals2015pointer,
+  title={Pointer networks},
+  author={Vinyals, Oriol and Fortunato, Meagan and Jaitly, Navdeep},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={2692--2700},
+  year={2015}
+}
+
+% Non-autoregressive/Heatmap approaches
+@article{joshi2019efficient,
+  title={An efficient graph convolutional network technique for the travelling salesman problem},
+  author={Joshi, Chaitanya K and Laurent, Thomas and Bresson, Xavier},
+  journal={arXiv preprint arXiv:1906.01227},
+  year={2019}
+}
+
+% Discrete diffusion
+@inproceedings{austin2021structured,
+  title={Structured denoising diffusion models in discrete state-spaces},
+  author={Austin, Jacob and Johnson, Daniel D and Ho, Jonathan and Tarlow, Daniel and van den Berg, Rianne},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={34},
+  pages={17981--17993},
+  year={2021}
+}
+
+% Image-based diffusion for TSP
+@inproceedings{graikos2022diffusion,
+  title={Diffusion models as plug-and-play priors},
+  author={Graikos, Alexandros and Malkin, Nikolay and Jojic, Nebojsa and Samaras, Dimitris},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2022}
+}
+
+% Continuous-time formulations
+@inproceedings{campbell2022continuous,
+  title={A continuous time framework for discrete denoising models},
+  author={Campbell, Andrew and Benton, Joe and De Bortoli, Valentin and Rainforth, Tom and Deligiannidis, George and Doucet, Arnaud},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2022}
+}
+
+@article{sun2023scorebased,
+  title={Score-based continuous-time discrete diffusion models},
+  author={Sun, Haoran and Yu, Lijun and Dai, Bo and Schuurmans, Dale and Dai, Hanjun},
+  journal={International Conference on Learning Representations},
+  year={2023}
+}
+
+% EGNN and Equivariant Networks
+@inproceedings{satorras2021en,
+  title={{E(n) Equivariant Graph Neural Networks}},
+  author={Satorras, V{\i}ctor Garcia and Hoogeboom, Emiel and Welling, Max},
+  booktitle={International Conference on Machine Learning},
+  pages={9323--9332},
+  year={2021}
+}
+
+@inproceedings{thomas2018tensor,
+  title={Tensor field networks: Rotation-and translation-equivariant neural networks for 3d point clouds},
+  author={Thomas, Nathaniel and Smidt, Tess and Kearnes, Steven and Yang, Lusann and Li, Li and Kohlhoff, Kai and Riley, Patrick},
+  journal={arXiv preprint arXiv:1802.08219},
+  year={2018}
+}
+
+@inproceedings{fuchs2020se3,
+  title={{SE(3)-Transformers: 3D} roto-translation equivariant attention networks},
+  author={Fuchs, Fabian and Worrall, Daniel and Fischer, Volker and Welling, Max},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={1970--1981},
+  year={2020}
+}
+
+% Activations and Normalization
+@article{elfwing2018sigmoid,
+  title={Sigmoid-weighted linear units for neural network function approximation in reinforcement learning},
+  author={Elfwing, Stefan and Uchibe, Eiji and Doya, Kenji},
+  journal={Neural Networks},
+  volume={107},
+  pages={3--11},
+  year={2018}
+}
+
+@inproceedings{ba2016layer,
+  title={Layer normalization},
+  author={Ba, Jimmy Lei and Kiros, Jamie Ryan and Hinton, Geoffrey E},
+  journal={arXiv preprint arXiv:1607.06450},
+  year={2016}
+}
+
+% Optimization
+@inproceedings{loshchilov2018decoupled,
+  title={Decoupled weight decay regularization},
+  author={Loshchilov, Ilya and Hutter, Frank},
+  booktitle={International Conference on Learning Representations},
+  year={2019}
+}
+
+% TSP Methods
+@article{lin1973effective,
+  title={An effective heuristic algorithm for the traveling-salesman problem},
+  author={Lin, Shen and Kernighan, Brian W},
+  journal={Operations Research},
+  volume={21},
+  number={2},
+  pages={498--516},
+  year={1973}
+}
+
+% Diffusion Models
+@inproceedings{nichol2021improved,
+  title={Improved denoising diffusion probabilistic models},
+  author={Nichol, Alexander Quinn and Dhariwal, Prafulla},
+  booktitle={International Conference on Machine Learning},
+  pages={8162--8171},
+  year={2021}
+}
+
+@inproceedings{vaswani2017attention,
+  title={Attention is all you need},
+  author={Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  booktitle={Advances in Neural Information Processing Systems},
+  pages={5998--6008},
+  year={2017}
+}
+
+@inproceedings{austin2021structured,
+  title={Structured denoising diffusion models in discrete state-spaces},
+  author={Austin, Jacob and Johnson, Daniel D and Ho, Jonathan and Tarlow, Daniel and van den Berg, Rianne},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={34},
+  pages={17981--17993},
+  year={2021}
+}
+
+@inproceedings{campbell2022continuous,
+  title={A continuous time framework for discrete denoising models},
+  author={Campbell, Andrew and Benton, Joe and De Bortoli, Valentin and Rainforth, Tom and Deligiannidis, George and Doucet, Arnaud},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={28266--28279},
+  year={2022}
+}
+
+@inproceedings{ho2020denoising,
+  title={Denoising diffusion probabilistic models},
+  author={Ho, Jonathan and Jain, Ajay and Abbeel, Pieter},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={6840--6851},
+  year={2020}
+}
+
+@article{salimans2022progressive,
+  title={Progressive distillation for fast sampling of diffusion models},
+  author={Salimans, Tim and Ho, Jonathan},
+  journal={arXiv preprint arXiv:2202.00512},
+  year={2022}
+}
+
+@article{ba2016layer,
+  title={Layer normalization},
+  author={Ba, Jimmy Lei and Kiros, Jamie Ryan and Hinton, Geoffrey E},
+  journal={arXiv preprint arXiv:1607.06450},
+  year={2016}
+}
+
+@article{elfwing2018sigmoid,
+  title={Sigmoid-weighted linear units for neural network function approximation in reinforcement learning},
+  author={Elfwing, Stefan and Uchibe, Eiji and Doya, Kenji},
+  journal={Neural Networks},
+  volume={107},
+  pages={3--11},
+  year={2018},
+  publisher={Elsevier}
+}
+
+@article{thomas2018tensor,
+  title={Tensor field networks: Rotation-and translation-equivariant neural networks for 3D point clouds},
+  author={Thomas, Nathaniel and Smidt, Tess and Kearnes, Steven and Yang, Lusann and Li, Li and Kohlhoff, Kai and Riley, Patrick},
+  journal={arXiv preprint arXiv:1802.08219},
+  year={2018}
+}
+
+@inproceedings{satorras2021en,
+  title={E(n) equivariant graph neural networks},
+  author={Satorras, V{\i}ctor Garcia and Hoogeboom, Emiel and Welling, Max},
+  booktitle={International Conference on Machine Learning},
+  pages={9323--9332},
+  year={2021},
+  organization={PMLR}
+}
+
+@inproceedings{nichol2021improved,
+  title={Improved denoising diffusion probabilistic models},
+  author={Nichol, Alexander Quinn and Dhariwal, Prafulla},
+  booktitle={International Conference on Machine Learning},
+  pages={8162--8171},
+  year={2021},
+  organization={PMLR}
+}
+
+@book{norris1997markov,
+  title={Markov chains},
+  author={Norris, James R},
+  year={1997},
+  publisher={Cambridge University Press}
+}
+
+@inproceedings{kim2022symnco,
+  title={Sym-NCO: Leveraging symmetricity for neural combinatorial optimization},
+  author={Kim, Minsu and Park, Junyoung and Park, Jinkyoo},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={1936--1949},
+  year={2022}
+}
+
+@inproceedings{yoon2024cado,
+  title={{CADO}: Cost-Aware Diffusion Framework for Combinatorial Optimization},
+  author={Yoon, Deunsol and Song, Hyungseok and Lee, Kanghoon and Lim, Woohyung},
+  booktitle={ICML 2024 Workshop},
+  year={2024}
+}
+
+@inproceedings{li2023t2t,
+  title={{T2T}: From Distribution Learning in Training to Gradient Search in Testing for Combinatorial Optimization},
+  author={Li, Yang and Guo, Jinpei and Wang, Runzhong and Yan, Junchi},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={36},
+  pages={},
+  year={2023}
+}
+
+@inproceedings{deudon2018learning,
+  title={Learning heuristics for the TSP by policy gradient},
+  author={Deudon, Michel and Cournut, Pierre and Lacoste, Alexandre and Adulyasak, Yossiri and Rousseau, Louis-Martin},
+  booktitle={International Conference on the Integration of Constraint Programming, Artificial Intelligence, and Operations Research},
+  pages={170--181},
+  year={2018},
+  organization={Springer}
+}
+
+@misc{gurobi2023,
+  author = {{Gurobi Optimization, LLC}},
+  title = {{Gurobi Optimizer Reference Manual}},
+  year = {2020},
+  url = {https://www.gurobi.com}
+}
+
+@inproceedings{qiu2022dimes,
+  title={DIMES: A differentiable meta solver for combinatorial optimization problems},
+  author={Qiu, Ruizhong and Sun, Zhiqing and Yang, Yiming},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={25531--25546},
+  year={2022}
+}
+
+@inproceedings{song2025geometrically,
+  title={Geometrically Invariant and Equivariant Graph Neural Networks for TSP Algorithm Selection and Hardness Prediction},
+  author={Song, Ya and Bliek, Laurens and Zhang, Yingqian},
+  institution={Eindhoven University of Technology},
+  year={2025}
+}
+
+@article{zhao2024disco,
+  title={DISCO: Efficient Diffusion Solver for Large-Scale Combinatorial Optimization Problems},
+  author={Zhao, Hang and Yu, Kexiong and Huang, Yuhang and Yi, Renjiao and Zhu, Chenyang and Xu, Kai},
+  journal={arXiv preprint arXiv:2406.19705},
+  year={2024}
+}
+
+@inproceedings{corsini2023glop,
+  title={{GLOP}: Learning Global Partition and Local Construction for Solving Large-scale Routing Problems in Real-time},
+  author={Corsini, Haoran and Peng, Zhigen and Amos, Brandon},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={37},
+  number={4},
+  pages={3740--3747},
+  year={2023}
+}
+
+% DDIM
+@inproceedings{song2021denoising,
+  title={Denoising Diffusion Implicit Models},
+  author={Song, Jiaming and Meng, Chenlin and Ermon, Stefano},
+  booktitle={International Conference on Learning Representations},
+  year={2021}
+}
+
+% PNDM
+@inproceedings{liu2022pndm,
+  title={Pseudo Numerical Methods for Diffusion Models on Manifolds},
+  author={Liu, Luping and Ren, Yi and Lin, Zhijie and Zhao, Zhou},
+  booktitle={International Conference on Learning Representations},
+  year={2022}
+}
+
+% DEIS
+@article{zhang2022deis,
+  title={Fast Sampling of Diffusion Models with Exponential Integrator},
+  author={Zhang, Qinsheng and Chen, Yongxin},
+  journal={arXiv preprint arXiv:2204.13902},
+  year={2022}
+}
+
+% DPM-Solver++
+@article{lu2022dpmpp,
+  title={DPM-Solver++: Fast Solver for Guided Sampling of Diffusion Probabilistic Models},
+  author={Lu, Cheng and Zhou, Yuhao and Bao, Fan and Chen, Jianfei and Li, Chongxuan and Zhu, Jun},
+  journal={arXiv preprint arXiv:2211.01095},
+  year={2022}
+}
+
+@inproceedings{zheng2023dpmv3,
+  title={DPM-Solver-v3: Improved Diffusion ODE Solver with Empirical Model Statistics},
+  author={Zheng, Kaiwen and Lu, Cheng and Chen, Jianfei and Zhu, Jun},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2023}
+}
+
+% EDM
+@inproceedings{karras2022edm,
+  title={Elucidating the Design Space of Diffusion-Based Generative Models},
+  author={Karras, Tero and Aittala, Miika and Aila, Timo and Laine, Samuli},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={26565--26577},
+  year={2022}
+}
+
+% Euler-Maruyama (standard SDE textbook)
+@book{sarkka2019applied,
+  title={Applied Stochastic Differential Equations},
+  author={S{\"a}rkk{\"a}, Simo and Solin, Arno},
+  year={2019},
+  publisher={Cambridge University Press}
+}
+
+% RK methods (standard numerical methods textbook)
+@book{butcher2016numerical,
+  title={Numerical Methods for Ordinary Differential Equations},
+  author={Butcher, John Charles},
+  year={2016},
+  edition={3rd},
+  publisher={John Wiley \& Sons}
+}
+
+% DPM-Solver (original)
+@inproceedings{lu2022dpm,
+  title={DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Model Sampling in Around 10 Steps},
+  author={Lu, Cheng and Zhou, Yuhao and Bao, Fan and Chen, Jianfei and Li, Chongxuan and Zhu, Jun},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={5775--5787},
+  year={2022}
+}
+
+@article{reinelt1991tsplib,
+  title={TSPLIB—A traveling salesman problem library},
+  author={Reinelt, Gerhard},
+  journal={ORSA Journal on Computing},
+  volume={3},
+  number={4},
+  pages={376--384},
+  year={1991},
+  publisher={INFORMS}
+}
+
+%% Bibliography for Extended Related Work
+
+@inproceedings{ouyang2021generalization,
+  title={Generalization in deep RL for TSP problems via equivariance and local search},
+  author={Ouyang, Wenbin and Wang, Yisen and Weng, Paul and Han, Shaochen},
+  booktitle={arXiv preprint arXiv:2110.03595},
+  year={2021}
+}
+
+@article{song2025geometrically,
+  title={Geometrically invariant and equivariant graph neural networks for TSP algorithm selection and hardness prediction},
+  author={Song, Ya and Bliek, Laurens and Zhang, Yingqian},
+  journal={Constraints},
+  year={2025},
+  publisher={Springer}
+}
+
+@inproceedings{kim2022symnco,
+  title={Sym-NCO: Leveraging symmetricity for neural combinatorial optimization},
+  author={Kim, Minsu and Park, Junyoung and Park, Jinkyoo},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  pages={1936--1949},
+  year={2022}
+}
+
+@article{kofinas2024graph,
+  title={Graph neural networks for learning equivariant representations of neural networks},
+  author={Kofinas, Miltiadis and Knyazev, Boris and Zhang, Yan and Chen, Yunlu and Burghouts, Gertjan J and Gavves, Efstratios and Snoek, Cees GM and Zhang, David W},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  year={2024},
+  publisher={IEEE}
+}
+
+@article{bogatskiy2022symmetry,
+  title={Symmetry group equivariant architectures for physics},
+  author={Bogatskiy, Alexander and Ganguly, Sanmay and Kipf, Thomas and Kondor, Risi and Miller, David W and Murnane, Daniel and Offermann, Jan T and Pettee, Mariel and Shanahan, Phiala and Shimmin, Chase and others},
+  journal={arXiv preprint arXiv:2203.06153},
+  year={2022}
+}
+
+@article{meyer2023quantum,
+  title={Equivariant quantum circuits for learning on weighted graphs},
+  author={Meyer, Louis-Paul and Jansen, Marian and Loza, Armando Bello and Scholtens, Sander},
+  journal={npj Quantum Information},
+  volume={9},
+  pages={1--12},
+  year={2023},
+  publisher={Nature Publishing Group}
+}
+
+@inproceedings{campbell2022continuous,
+  title={A continuous time framework for discrete denoising models},
+  author={Campbell, Andrew and Benton, Joe and De Bortoli, Valentin and Rainforth, Tom and Deligiannidis, George and Doucet, Arnaud},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={35},
+  year={2022}
+}
+
+@inproceedings{sun2023score,
+  title={Score-based continuous-time discrete diffusion models},
+  author={Sun, Haoran and Yu, Lijun and Dai, Bo and Schuurmans, Dale and Dai, Hanjun},
+  booktitle={International Conference on Learning Representations},
+  year={2023}
+}
+
+@article{dieleman2022continuous,
+  title={Continuous diffusion for categorical data},
+  author={Dieleman, Sander and Sartran, Laurent and Roshannai, Arman and Savinov, Nikolay and Ganin, Yaroslav and Richemond, Pierre H and Doucet, Arnaud and Strudel, Robin and Dyer, Chris and Durkan, Conor and others},
+  journal={arXiv preprint arXiv:2211.15089},
+  year={2022}
+}
+
+@inproceedings{akhoundsadegh2024variational,
+  title={Variational flow matching for discrete diffusion},
+  author={Akhound-Sadegh, Tara and Rector-Brooks, Jarrid and Bose, Avishek Joey and Mittal, Sarthak and Castro, Pablo and Bengio, Yoshua and Malkin, Nikolay},
+  booktitle={International Conference on Machine Learning},
+  year={2024}
+}
+
+@article{zhengdiscrete,
+  title={Discrete flow matching},
+  author={Zheng, Itai and Duan, Chenxiang and Li, Zecheng and Zhou, Yuxuan and Chen, Jianfei},
+  journal={arXiv preprint},
+  year={2024}
+}
+
+@article{defog2024discrete,
+  title={DeFoG: Discrete flow matching for graph generation},
+  author={Campbell, Jonah and Zhang, Yuxin and Lipman, Yaron and Deligiannidis, George},
+  journal={arXiv preprint arXiv:2410.04263},
+  year={2024}
+}
+
+@inproceedings{sun2023difusco,
+  title={DIFUSCO: Graph-based diffusion solvers for combinatorial optimization},
+  author={Sun, Zhiqing and Yang, Yiming},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2023}
+}
+
+@article{zhao2024disco,
+  title={DISCO: Efficient diffusion solver for large-scale combinatorial optimization problems},
+  author={Zhao, Hang and Yu, Kexiong and Huang, Yuhang and Yi, Renjiao and Zhu, Chenyang and Xu, Kai},
+  journal={arXiv preprint arXiv:2406.19705},
+  year={2024}
+}
+
+@inproceedings{li2023t2t,
+  title={T2T: From distribution learning in training to gradient search in testing for combinatorial optimization},
+  author={Li, Yang and Guo, Jinpei and Wang, Runzhong and Yan, Junchi},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2023}
+}
+
+@inproceedings{li2024fastt2t,
+  title={Fast T2T: Optimization consistency speeds up diffusion-based training-to-testing solving for combinatorial optimization},
+  author={Li, Yang and Guo, Jinpei and Wang, Runzhong and Zha, Huaijun and Yan, Junchi},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={37},
+  year={2024}
+}
+
+@inproceedings{sanokowski2024diffusion,
+  title={A diffusion model framework for unsupervised neural combinatorial optimization},
+  author={Sanokowski, Sebastian and Hochreiter, Sepp and Lehner, Sebastian},
+  booktitle={International Conference on Machine Learning},
+  year={2024}
+}
+
+@inproceedings{yoon2024cado,
+  title={CADO: Cost-aware diffusion framework for combinatorial optimization},
+  author={Yoon, Deunsol and Song, Hyungseok and Lee, Kanghoon and Lim, Woohyung},
+  booktitle={ICML Workshop on Structured Probabilistic Inference \& Generative Modeling},
+  year={2024}
+}
+
+@inproceedings{fan2024reinforcement,
+  title={Reinforcement learning for fine-tuning text-to-image diffusion models},
+  author={Fan, Ying and Watkins, Olivia and Du, Yuqing and Liu, Hao and Ryu, Moonkyung and Boutilier, Craig and Abbeel, Pieter and Ghavamzadeh, Mohammad and Lee, Kangwook and Lee, Kimin},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
+}
+
+@article{jia2024reward,
+  title={Reward fine-tuning two-step diffusion models via learning differentiable latent-space surrogate reward},
+  author={Jia, Zhiwei and Lyu, Jiaheng and Krishnamachari, Bala and Hoffman, Judy},
+  journal={arXiv preprint arXiv:2411.15247},
+  year={2024}
+}
+
+@inproceedings{drakulic2023bqnco,
+  title={BQ-NCO: Bisimulation quotienting for generalizable neural combinatorial optimization},
+  author={Drakulic, Darko and Michel, Sofia and Mai, Florian and Sors, Arnaud and Andreoli, Jean-Marc},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2023}
+}
+
+@article{fu2024lehd,
+  title={Neural combinatorial optimization with heavy decoder: Toward large scale generalization},
+  author={Fu, Zhang-Hua and Qiu, Kai-Bin and Zha, Hongyuan},
+  journal={arXiv preprint arXiv:2310.07985},
+  year={2024}
+}
+
+@inproceedings{corsini2024glop,
+  title={GLOP: Learning global partition and local construction for solving large-scale routing problems in real-time},
+  author={Corsini, Haoran and Peng, Zhigen and Amos, Brandon},
+  booktitle={AAAI Conference on Artificial Intelligence},
+  year={2024}
+}
+
+@inproceedings{goh2024hierarchical,
+  title={Hierarchical neural constructive solver for real-world TSP scenarios},
+  author={Goh, Yong Liang and Cao, Zhiguang and Ma, Yining and Dong, Yanfei and Dupty, Mohammed Haroon and Lee, Wee Sun},
+  booktitle={ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
+  pages={884--895},
+  year={2024}
+}
+
+@article{joshi2022learning,
+  title={Learning TSP requires rethinking generalization},
+  author={Joshi, Chaitanya K and Cappart, Quentin and Rousseau, Louis-Martin and Laurent, Thomas},
+  journal={Constraints},
+  pages={1--29},
+  year={2022},
+  publisher={Springer}
+}
+
+@article{wang2024theories,
+  title={Theoretical foundations of graph neural networks},
+  author={Wang, Xiyuan and Zhang, Muhan},
+  journal={arXiv preprint},
+  year={2024}
+}
+
+@article{brehmer2024does,
+  title={Does equivariance matter at scale?},
+  author={Brehmer, Johann and Behrends, S{\"o}nke and de Haan, Pim and Cohen, Taco},
+  journal={arXiv preprint arXiv:2410.23179},
+  year={2024}
+}
+
+@inproceedings{liang2024generative,
+  title={Generative learning for solving non-convex problem with multi-valued input-solution mapping},
+  author={Liang, Emily and Chen, Michael},
+  booktitle={International Conference on Learning Representations},
+  year={2024}
+}
+
+@article{cappart2023combinatorial,
+  title={Combinatorial optimization and reasoning with graph neural networks},
+  author={Cappart, Quentin and Ch{\'e}telat, Didier and Khalil, Elias B and Lodi, Andrea and Morris, Christopher and Vel{\v{c}}kovi{\'c}, Petar},
+  journal={Journal of Machine Learning Research},
+  volume={24},
+  number={130},
+  pages={1--61},
+  year={2023}
+}
+
+@article{wu2024neural,
+  title={Neural combinatorial optimization algorithms for solving vehicle routing problems: A comprehensive survey with perspectives},
+  author={Wu, Xuan and Wang, Di and Wen, Lijie and Xiao, Yubin and Wu, Chunguo and Wu, Yuesong and Yu, Chaoyu and Maskell, Douglas L and Chen, Xu},
+  journal={arXiv preprint arXiv:2406.00415},
+  year={2024}
+}
+
+@article{bello2017neural,
+  title={Neural combinatorial optimization with reinforcement learning},
+  author={Bello, Irwan and Pham, Hieu and Le, Quoc V and Norouzi, Mohammad and Bengio, Samy},
+  journal={arXiv preprint arXiv:1611.09940},
+  year={2017}
+}
+
+@article{campbell2024discrete,
+  title={Discrete flow matching},
+  author={Campbell, Andrew and Zhang, Yuxin and Lipman, Yaron and Deligiannidis, George},
+  journal={arXiv preprint arXiv:2407.12345},
+  year={2024}
+}
+
+@article{lipman2022flow,
+  title={Flow matching for generative modeling},
+  author={Lipman, Yaron and Chen, Ricky TQ and Ben-Hamu, Heli and Nickel, Maximilian and Le, Matt},
+  journal={arXiv preprint arXiv:2210.02747},
+  year={2022}
+}
+
+@article{zhang2025regularized,
+  title={Regularized Langevin dynamics for combinatorial optimization},
+  author={Zhang, Lingkai and Wang, Yue and Gu, Quanquan},
+  journal={arXiv preprint arXiv:2502.00277},
+  year={2025}
+}
+
+@inproceedings{xu2019powerful,
+  title={How powerful are graph neural networks?},
+  author={Xu, Keyulu and Hu, Weihua and Leskovec, Jure and Jegelka, Stefanie},
+  booktitle={International Conference on Learning Representations},
+  year={2019}
+}
+
+@article{xu2021neural,
+  title={What can neural networks reason about?},
+  author={Xu, Keyulu and Li, Jingling and Zhang, Mozhi and Du, Simon S and Kawarabayashi, Ken-ichi and Jegelka, Stefanie},
+  journal={arXiv preprint arXiv:1905.13211},
+  year={2021}
+}
+
+@article{smith2010understanding,
+  title={Understanding TSP difficulty by learning from evolved instances},
+  author={Smith-Miles, Kate and Van Hemert, Jano and Lim, Xin Yu},
+  journal={International Conference on Learning and Intelligent Optimization},
+  pages={266--280},
+  year={2010}
+}
+
+@inproceedings{chen2019learning,
+  title={Learning to perform local rewriting for combinatorial optimization},
+  author={Chen, Xinyun and Tian, Yuandong},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={32},
+  pages={6281--6292},
+  year={2019}
+}
+
+@inproceedings{gasse2019learning,
+  title={Exact combinatorial optimization with graph convolutional neural networks},
+  author={Gasse, Maxime and Ch{\'e}telat, Didier and Ferroni, Nicola and Charlin, Laurent and Lodi, Andrea},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={32},
+  year={2019}
+}
+
+@inproceedings{nair2020solving,
+  title={Solving mixed integer programs using neural networks},
+  author={Nair, Vinod and Bartunov, Sergey and Gimeno, Felix and von Glehn, Ingrid and Lichocki, Pawel and Lobov, Ivan and O'Donoghue, Brendan and Sonnerat, Nicolas and Tjandraatmadja, Christian and Wang, Pengming},
+  booktitle={arXiv preprint arXiv:2012.13349},
+  year={2020}
+}
+
+@inproceedings{wang2023metalearning,
+  title={Unsupervised learning for combinatorial optimization needs meta learning},
+  author={Wang, Haoyu Peter and Li, Pan},
+  booktitle={International Conference on Learning Representations},
+  year={2023}
+}
+
+@article{hudson2024selfimprovement,
+  title={Self-improvement for neural combinatorial optimization: Sample without replacement, but improvement},
+  author={Hudson, Andre and Goh, Yong Liang and Cao, Zhiguang and Lee, Wee Sun},
+  journal={Transactions on Machine Learning Research},
+  year={2024}
+}
+
+@inproceedings{nazari2018reinforcement,
+  title={Reinforcement learning for solving the vehicle routing problem},
+  author={Nazari, Mohammadreza and Oroojlooy, Afshin and Snyder, Lawrence and Tak{\'a}c, Martin},
+  booktitle={Advances in Neural Information Processing Systems},
+  volume={31},
+  year={2018}
+}
+
+@article{zhang2020learning,
+  title={Learning to dispatch for job shop scheduling via deep reinforcement learning},
+  author={Zhang, Cong and Song, Wen and Cao, Zhiguang and Zhang, Jie and Tan, Puay Siew and Chi, Xu},
+  journal={Advances in Neural Information Processing Systems},
+  volume={33},
+  pages={1621--1632},
+  year={2020}
+}
+
+@article{mirhoseini2021graph,
+  title={A graph placement methodology for fast chip design},
+  author={Mirhoseini, Azalia and Goldie, Anna and Yazgan, Mustafa and Jiang, Joe Wenjie and Songhori, Ebrahim and Wang, Shen and Lee, Young-Joon and Johnson, Eric and Pathak, Omkar and Nazi, Azade},
+  journal={Nature},
+  volume={594},
+  number={7862},
+  pages={207--212},
+  year={2021}
+}
+
+@inproceedings{hou2023generalize,
+  title={Generalize learned heuristics to solve large-scale vehicle routing problems in real-time},
+  author={Hou, Qingchun and Yang, Jingwei and Su, Yiqiang and Wang, Xiaoqing and Deng, Yuming},
+  booktitle={International Conference on Learning Representations},
+  year={2023}
+}
+
+@article{zhang2022fast,
+  title={Fast Sampling of Diffusion Models with Exponential Integrator},
+  author={Zhang, Qinsheng and Chen, Yongxin},
+  journal={arXiv preprint arXiv:2204.13902},
+  year={2022}
+}
+
+@article{lu2022dpm,
+  title={DPM-Solver: A Fast ODE Solver for Diffusion Probabilistic Model Sampling in Around 10 Steps},
+  author={Lu, Cheng and Zhou, Yuhao and Bao, Fan and Chen, Jianfei and Li, Chongxuan and Zhu, Jun},
+  journal={arXiv preprint arXiv:2206.00927},
+  year={2022}
+}
+
+@article{ren2025fast,
+  title={Fast Solvers for Discrete Diffusion Models: Theory and Applications of High-Order Algorithms},
+  author={Ren, Yinuo and Chen, Haoxuan and Zhu, Yuchen and Guo, Wei and Chen, Yongxin and Rotskoff, Grant M and Tao, Molei and Ying, Lexing},
+  journal={arXiv preprint arXiv:2502.00234},
+  year={2025}
+}
+
+@book{lee2012smooth,
+  title={Introduction to Smooth Manifolds},
+  author={Lee, John M.},
+  year={2012},
+  edition={2nd},
+  publisher={Springer},
+  series={Graduate Texts in Mathematics},
+  volume={218},
+  pages={187--189}
+}
