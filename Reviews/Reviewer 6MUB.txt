@@ -1,0 +1,30 @@
+Summary:
+This paper introduces EDISCO, a novel diffusion-based framework for Geometric Combinatorial Optimization Problems (GCOPs) like the TSP. The authors identify two major gaps in existing state-of-the-art diffusion solvers: (1) they are not E(2)-equivariant, meaning they fail to exploit the inherent rotational and translational symmetries of geometric problems, leading to poor sample efficiency; and (2) they rely on discrete-time diffusion, which limits inference flexibility and can accumulate errors. Towards the two challenges, the paper proposes a combination of two proposed techniques, E(2)-Equivariant Score Network, and Continuous-Time Categorical Diffusion. Results show that it achieves new state-of-the-art results on large-scale TSPs (e.g., cutting the optimality gap on TSP-10000 from 2.68% to 1.20%).
+
+Soundness: 3: good
+Presentation: 3: good
+Contribution: 3: good
+Strengths:
+EDISCO proposes an architectural solution. It builds the symmetry into the model by using an E(2)-equivariant GNN. This is a fundamental change to the network layers, and also new to the community.
+
+State-of-the-Art Performance: The results are outstanding. EDISCO sets a new SOTA for diffusion-based solvers, particularly on large-scale problems.
+
+Sufficient experiments especially on the ablation studies.
+
+Weaknesses:
+The results of LKH in Table 1 seems unright (not good enough as seen in literature).
+
+Hyperparameter Sensitivity: The appendices (F.6) reveal that the EGNN's architectural stabilizers (coordinate step size 
+ and temperature 
+) are sensitive. Table 12 shows that an alpha >= 0.2
+ leads to unstable training or "coordinate collapse". While the authors found an optimal setting, this introduces new, non-trivial hyperparameters that must be tuned for stable and effective training.
+
+Stronger baselines e.g. fast t2t are missing.
+
+Questions:
+N/A
+
+Flag For Ethics Review: No ethics review needed.
+Rating: 6: marginally above the acceptance threshold. But would not mind if paper is rejected
+Confidence: 3: You are fairly confident in your assessment. It is possible that you did not understand some parts of the submission or that you are unfamiliar with some pieces of related work. Math/other details were not carefully checked.
+Code Of Conduct: Yes

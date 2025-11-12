@@ -1,0 +1,54 @@
+Summary:
+This paper proposes EDISCO, a diffusion-based framework for Geometric Combinatorial Optimization Problems (GCOPs) (e.g., TSP) that integrates two key innovations: E(2)-equivariant Graph Neural Networks (EGNNs) and continuous-time categorical diffusion. E(2)-equivariance ensures the model respects geometric symmetries (rotations, translations, reflections) of GCOPs, while continuous-time diffusion (modeled as Continuous-Time Markov Chains, CTMCs) enables adaptive numerical solvers and avoids discrete-time approximation errors.
+
+Soundness: 2: fair
+Presentation: 3: good
+Contribution: 2: fair
+Strengths:
+EDISCO combines E(2)-equivariance with continuous-time categorical diffusion for GCOPs, filling a gap where prior diffusion solvers ignore GCOPs' inherent symmetries, which is novel and practical.
+The paper is well-structured and easy to follow.
+The experimental studies on TSP are relatively thorough and the performance appears promising.
+Weaknesses:
+The evaluation scope is relatively limited. EDISCO is only evaluated on routing problems like TSP and CVRP. It would improve the quality of this work if the authors could provide some results on more types of GCOPs (or at least a subset of), e.g., node-focused tasks (MIS, Max Clique, Max Cut, Min Vertx Cover, etc., as studied by many NCO works [1-5]; note that DIMES/T2T/DIFUSCO (which you have included for comparison) have also evaluated their solvers on at least MIS), and VRPs with more complex constraints or asymmetric/binary TSPs. Also, current CVRP experiments only cover small scales (20–100 nodes) and lack comparison to more recent CVRP solvers like GLOP or PO[6], etc.
+This work seems to have followed the research line of generative neural CO solving, e.g., DIFUSCO and T2T. To my knowledge, some follow-up works have emerged with stronger performance or more applicable geometric CO problems evaluated, e.g., Fast-T2T (Li et al. NeurIPS 2024), COExpander (Ma et al. ICML 2025), DiffUCO (Sanokowski et al. ICML 2024), etc. Also, the RL or local constructive/unsupervised field has also fostered approaches that are more advanced than DIMES and POMO, e.g., BQ-NCO (Drakulic et al. NeurIPS 2023), UTSP (Min et al. NeurIPS 2023), UniCO (Pan et al. ICLR 2025), GOAL (Drakulic et al. ICLR 2025), BOPO (Liao et al. ICML 2025), etc. I suggest the authors provide more comparative results (or at least considerable discussions) in this regard. I have listed several [6-13] below for your reference.
+The main experiments are done on uniform TSP instances, while including (at least a subset of) supplementary evaluations on more diverse data distributions, e.g., Gaussian, cluster, explosive, implosion as in GLOP (Ye et al. AAAI 2024), are conducive to validating a better generalization capability of the proposed architecture and the training process. Also, I'm curious how EDISCO performs on ATSP cases, e.g., those defined in MatNet (Kwon et al. NeurIPS 2021), as 2D-coordinates are absent for input and the inherent symmetries are largely removed. Will these scenario shifts (occurring commonly in real-world applications) immensely harm the capability of the E(2)-equivariant tricks proposed in this paper?
+Regarding the adaptive mixing strategy, the linear weight function 
+ and deterministic switching threshold 
+ are chosen via empirical results like a grid search but lack rigorous/theoretical justification for why they outperform the alternatives (those listed and beyond, e.g., other instance-aware adaptive strategies (e.g., adjusting 
+ based on node density or problem scale)).
+For the proposed equivariant architecture, it would be great if the authors apply it to replace the vanilla GNNs used in previous solvers so as to demonstrate the exact performance gain by advancing the neural backbone.
+References:
+
+[1] A Diffusion Model Framework for Unsupervised Neural Combinatorial Optimization (DiffUCO, ICML 2024)
+
+[2] Regularized Langevin Dynamics for Combinatorial Optimization (RLSA, ICML 2025)
+
+[3] Revisiting Sampling for Combinatorial Optimization (iSCO, ICML 2023)
+
+[4] Variational Annealing on Graphs for Combinatorial Optimization (VAG-CO, NeurIPS 2023)
+
+[5] Let the Flows Tell: Solving Graph Combinatorial Optimization Problems with GFlowNets (GFlowNets, NeurIPS 2023)
+
+[6] Preference Optimization for Combinatorial Optimization Problems (PO, ICML 2025)
+
+[7] Fast T2T: Optimization Consistency Speeds Up Diffusion-Based Training-to-Testing Solving for Combinatorial Optimization (NeurIPS 2024)
+
+[8] COExpander: Adaptive Solution Expansion for Combinatorial Optimization (ICML 2025)
+
+[9] BQ-NCO: Bisimulation Quotienting for Efficient Neural Combinatorial Optimization (NeurIPS 2023)
+
+[10] Unsupervised Learning for Solving the Travelling Salesman Problem (UTSP, NeurIPS 2023)
+
+[11] UniCO: On Unified Combinatorial Optimization via Problem Reduction to Matrix-Encoded General TSP (ICLR 2025)
+
+[12] GOAL: A Generalist Combinatorial Optimization Agent Learner (ICLR 2025)
+
+[13] BOPO: Neural Combinatorial Optimization via Best-anchored and Objective-guided Preference Optimization (ICML 2025)
+
+Questions:
+Please refer to the Weaknesses part where I've listed my major concerns.
+
+Flag For Ethics Review: No ethics review needed.
+Rating: 4: marginally below the acceptance threshold. But would not mind if paper is accepted
+Confidence: 4: You are confident in your assessment, but not absolutely certain. It is unlikely, but not impossible, that you did not understand some parts of the submission or that you are unfamiliar with some pieces of related work.
+Code Of Conduct: Yes

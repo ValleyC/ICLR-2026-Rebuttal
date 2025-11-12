@@ -1,0 +1,32 @@
+Summary:
+This paper presents EDISCO, the first diffusion-based framework combining E(2)-equivariant graph neural networks with continuous-time categorical diffusion models for solving the Traveling Salesman Problem (TSP). The key innovations are: (1) incorporating E(2) equivariance (rotations, translations, reflections) directly into the diffusion architecture using Equivariant Graph Neural Networks (EGNNs), (2) formulating edge selection as continuous-time Markov chains (CTMCs) enabling analytical tractability and compatibility with higher-order accelerated solvers, and (3) adaptive mixing strategy interpolating between stochastic transitions and deterministic selection. EDISCO achieves state-of-the-art performance, reducing TSP optimality gaps from 0.12% to 0.08% (TSP-500), 0.30% to 0.22% (TSP-1000), and 2.68% to 1.20% (TSP-10000), while requiring only 33%-50% of training data compared to competing diffusion methods and achieving 2-3x speedups with better quality or up to 25x speedups for real-time applications.
+
+Soundness: 3: good
+Presentation: 2: fair
+Contribution: 3: good
+Strengths:
+Novel Technical Integration: Combining E(2)-equivariant architectures with continuous-time discrete diffusion is interesting. The theoretical foundation is solid, which shows how geometric structure preservation throughout forward and reverse diffusion processes improves both sample efficiency and solution quality. Ablation (Table 3) confirms equivariance removal causes the most significant degradation (1.95%→3.58% on TSP-500, 2.85%→5.06% on TSP-1000).
+
+Strong Empirical Results: Consistent state-of-the-art performance across all scales (TSP-50 to TSP-10000). Particularly impressive on TSP-10000 with 1.20% gap (vs. 2.68% previous best) and average 0.088% gap on 29 TSPLIB instances (31.6% relative improvement over T2T). Cross-size generalization is excellent - models trained on TSP-1000 achieve <4.3% gap on all other scales.
+
+Data Efficiency: Requires only 33%-50% of training data compared to DIFUSCO/T2T while maintaining or exceeding their performance. Robustness to data quality is demonstrated - training on suboptimal Farthest Insertion solutions (7.5% gap) yields only 0.82% final gap vs. 2.75% for DIFUSCO. Achieves <0.07% gap with just 10% of training data on TSP-50.
+
+Weaknesses:
+Limited Problem Scope: Evaluation restricted to TSP only. Missing: (a) other geometric COPs like Vehicle Routing Problem, Capacitated VRP, or Steiner Tree Problem, (b) non-Euclidean settings or different distance metrics (Manhattan, road networks), (c) real-world constraints (time windows, precedence, capacity limits), (d) comparison with state-of-the-art traditional solvers (Concorde, LKH-3) on wall-clock time and solution quality trade-offs. While TSP is canonical, single-problem evaluation limits generalizability claims.
+
+Scalability Questions: While TSP-10000 results are promising, paper doesn't address: (a) performance on even larger instances (100K+ cities common in real logistics), (b) memory requirements scaling - EGNN message passing is O(n²) for fully connected graphs, (c) how architecture depth/width should scale with problem size, (d) whether curriculum learning from smaller problems is always necessary (adds training complexity and time overhead). Tables 13-15 show results but lack analysis of computational scaling patterns.
+
+Questions:
+Problem Generalization: How does EDISCO perform on VRP with time windows or capacitated routing? What architectural modifications are needed for constraints beyond tour connectivity?
+
+Scalability Analysis: What are the memory usage and inference time scaling curves for TSP-100 to TSP-10000?
+
+Solver Comparison: Compare wall-clock time and solution quality against LKH-3 and Concorde on standard benchmarks. Where does EDISCO fit in the quality-speed Pareto frontier?
+
+Flag For Ethics Review: No ethics review needed.
+Details Of Ethics Concerns:
+N/A
+
+Rating: 6: marginally above the acceptance threshold. But would not mind if paper is rejected
+Confidence: 3: You are fairly confident in your assessment. It is possible that you did not understand some parts of the submission or that you are unfamiliar with some pieces of related work. Math/other details were not carefully checked.
+Code Of Conduct: Yes

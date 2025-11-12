@@ -1,0 +1,31 @@
+Summary:
+EDISCO introduces the first E(2)-equivariant continuous-time discrete diffusion model for geometric combinatorial optimization. The paper conducts extensive experiments on TSP and demonstrate in the appendix the feasibility of extending the model to CVRP.
+
+Soundness: 2: fair
+Presentation: 2: fair
+Contribution: 2: fair
+Strengths:
+EDISCO apply E(2)-equivariance to the TSP and achieves solid results.
+
+This paper also present an extension to the CVRP; although the performance is not outstanding, it remains a worthwhile attempt.
+
+EDISCO employs an adaptive mixing strategy to dynamically balance diffusion-based transitions with direct model predictions, and the authors also provide comparative results of alternative approaches.
+
+EDISCO conducts extensive ablation studies to demonstrate the importance of each component. Additionally, it performs robustness experiments on the training data.
+
+Weaknesses:
+This paper lacks generalization experiments on different distributions, such as Gaussian and Cluster distributions of TSP, CVRPLIB for CVRP.
+
+For the CVRP baseline, HGS might be a better choice.
+
+E(2)-equivariance assumption only holds for symmetric, Euclidean distances; its extensibility to non-symmetric problems such as ATSP deserves discussion.
+
+Questions:
+The CVRP experiments do not report runtime; could you please provide it?
+
+How does the model learn the demand constraints in CVRP? At present, constraints seem to be enforced only during the decoding phase. Moreover, in some CVRP instances, returning to the depot is not triggered solely by insufficient remaining capacity.
+
+Flag For Ethics Review: No ethics review needed.
+Rating: 6: marginally above the acceptance threshold. But would not mind if paper is rejected
+Confidence: 4: You are confident in your assessment, but not absolutely certain. It is unlikely, but not impossible, that you did not understand some parts of the submission or that you are unfamiliar with some pieces of related work.
+Code Of Conduct: Yes
