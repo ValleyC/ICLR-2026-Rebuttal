@@ -621,41 +621,49 @@ To ensure solution completeness, any customers that remain unvisited after the m
 We evaluate EDISCO on standard CVRP benchmarks with 20, 50, and 100 customers, following the evaluation protocol from \citet{kool2019attention}. All instances use a vehicle capacity of 50 units with customer demands uniformly sampled from $\{1, ..., 9\}$.
 
 \begin{table}[h]
+\color{blue}
 \centering
-\caption{Results on CVRP-20, CVRP-50, and CVRP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy, S: Sampling. LKH-3* represents the baseline for computing the gap. Gurobi results are from the user's provided table. AM results are from \citet{kool2019attention}. POMO results are from \citet{kwon2020pomo}. Sym-NCO results are from \citet{kim2022symnco} (CVRP-100 only).}
+\caption{Results on CVRP-20, CVRP-50, and CVRP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy, S: Sampling. LKH-3* represents the baseline for computing the gap. Gurobi results are from the user's provided table. AM results are from \citet{kool2019attention}. POMO results are from \citet{kwon2020pomo}. Sym-NCO results are from \citet{kim2022symnco} (CVRP-100 only). Runtime data for POMO and Sym-NCO are from their respective papers.}
 \label{tab:cvrp_results}
 \adjustbox{width=\textwidth}{%
-\begin{tabular}{llcccccccc}
+\begin{tabular}{llccccccccc}
 \toprule
-\multirow{2}{*}{\textbf{Algorithm}} & \multirow{2}{*}{\textbf{Type}} & \multicolumn{2}{c}{\textbf{CVRP-20}} & \multicolumn{2}{c}{\textbf{CVRP-50}} & \multicolumn{2}{c}{\textbf{CVRP-100}} \\
-\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
-& & Cost$\downarrow$ & Gap$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ \\
+\multirow{2}{*}{\textbf{Algorithm}} & \multirow{2}{*}{\textbf{Type}} & \multicolumn{3}{c}{\textbf{CVRP-20}} & \multicolumn{3}{c}{\textbf{CVRP-50}} & \multicolumn{3}{c}{\textbf{CVRP-100}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+& & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ \\
 \midrule
-Gurobi~\citep{gurobi2023} & Exact & 6.10 & 0.00\% & -- & -- & -- & -- \\
-LKH-3*~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 10.38 & 0.00\% & 15.65 & 0.00\% \\
+Gurobi~\citep{gurobi2023} & Exact & 6.10 & 0.00\% & -- & -- & -- & -- & -- & -- & -- \\
+LKH-3*~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 2h & 10.38 & 0.00\% & 7h & 15.65 & 0.00\% & 12h \\
 \midrule
-\multicolumn{8}{l}{\textit{Greedy Decoding}} \\
+\multicolumn{11}{l}{\textit{Greedy Decoding}} \\
 \midrule
-AM~\citep{kool2019attention} & RL+G & 6.40 & 4.97\% & 10.98 & 5.86\% & 16.80 & 7.34\% \\
-POMO~\citep{kwon2020pomo} & RL+G & 6.35 & 3.72\% & 10.74 & 3.52\% & 16.13 & 3.09\% \\
-Sym-NCO~\citep{kim2022symnco} & RL+G & -- & -- & -- & -- & \textbf{16.10} & \textbf{2.88\%} \\
-\textbf{EDISCO (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & \textbf{10.63} & \textbf{2.46\%} & 16.15 & 3.17\% \\
+AM~\citep{kool2019attention} & RL+G & 6.40 & 4.97\% & $<$1s & 10.98 & 5.86\% & 1s & 16.80 & 7.34\% & 3s \\
+POMO~\citep{kwon2020pomo} & RL+G & 6.35 & 3.72\% & $<$1s & 10.74 & 3.52\% & 1s & 16.13 & 3.09\% & 3s \\
+Sym-NCO~\citep{kim2022symnco} & RL+G & -- & -- & -- & -- & -- & -- & \textbf{16.10} & \textbf{2.88\%} & 3s \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & 1s & \textbf{10.63} & \textbf{2.46\%} & 2s & 16.15 & 3.17\% & 5s \\
+\textbf{EDISCO with 5-step DEIS-2 (ours)} & SL+G & 6.23 & 2.01\% & \textbf{0.1s} & 10.66 & 3.51\% & \textbf{0.2s} & 16.22 & 4.53\% & \textbf{0.5s} \\
 \midrule
-\multicolumn{8}{l}{\textit{Sampling/Multiple Trajectories}} \\
+\multicolumn{11}{l}{\textit{Sampling/Multiple Trajectories}} \\
 \midrule
-AM~\citep{kool2019attention} & RL+S (1280) & 6.25 & 2.49\% & 10.62 & 2.40\% & 16.23 & 3.72\% \\
-POMO (no aug)~\citep{kwon2020pomo} & RL+G & 6.17 & 0.82\% & 10.49 & 1.14\% & 15.83 & 1.13\% \\
-POMO (×8 aug)~\citep{kwon2020pomo} & RL+G & \textbf{6.14} & \textbf{0.21}\% & 10.42 & 0.45\% & 15.73 & 0.51\% \\
-Sym-NCO~\citep{kim2022symnco} & RL+S (100) & -- & -- & -- & -- & 15.87 & 1.40\% \\
-\textbf{EDISCO (ours)} & SL+S (1280) & 6.15 & 0.33\% & \textbf{10.41} & \textbf{0.35\%} & \textbf{15.71} & \textbf{0.38\%} \\
+AM~\citep{kool2019attention} & RL+S (1280) & 6.25 & 2.49\% & 3m & 10.62 & 2.40\% & 7m & 16.23 & 3.72\% & 30m \\
+POMO (no aug)~\citep{kwon2020pomo} & RL+G & 6.17 & 0.82\% & 1s & 10.49 & 1.14\% & 4s & 15.83 & 1.13\% & 19s \\
+POMO (×8 aug)~\citep{kwon2020pomo} & RL+G & \textbf{6.14} & \textbf{0.21}\% & 5s & 10.42 & 0.45\% & 26s & 15.73 & 0.51\% & 2m \\
+Sym-NCO~\citep{kim2022symnco} & RL+S (100) & -- & -- & -- & -- & -- & -- & 15.87 & 1.40\% & 16s \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S (16) & 6.15 & 0.33\% & 4s & \textbf{10.41} & \textbf{0.35\%} & 7s & \textbf{15.71} & \textbf{0.38\%} & 18s \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-\paragraph{Analysis of Results} The results are shown in Table~\ref{tab:cvrp_results}. EDISCO demonstrates strong performance on CVRP, achieving competitive results across all instance sizes. With greedy decoding, EDISCO substantially outperforms AM (1.41\% vs 4.97\% on CVRP-20), though it slightly trails Sym-NCO on CVRP-100 (3.17\% vs 2.88\%). With sampling, EDISCO achieves the best performance on larger instances (0.35\% on CVRP-50, 0.38\% on CVRP-100) but falls behind POMO with augmentation on CVRP-20 (0.33\% vs 0.21\%).
+{\color{blue}
+\paragraph{Analysis of Results} Table~\ref{tab:cvrp_results} shows EDISCO's performance on CVRP across different instance sizes. We present two configurations offering distinct quality-speed trade-offs (Appendix~\ref{subsec:solver_eval}):
 
-These results highlight fundamental differences between diffusion models and autoregressive approaches. Autoregressive models like POMO generate solutions sequentially, enabling them to leverage explicit augmentation strategies that evaluate problems from multiple geometric perspectives. POMO's 8× augmentation effectively multiplies the search space by considering rotated and reflected problem instances. In contrast, EDISCO's diffusion process operates on entire adjacency matrices simultaneously, learning to denoise complete solutions rather than constructing them step-by-step. While this parallel generation captures global solution patterns more effectively, it cannot directly benefit from the same augmentation multipliers that boost autoregressive performance on small instances.
+With 50-step PNDM and greedy decoding, EDISCO substantially outperforms AM (1.41\% vs 4.97\% gap on CVRP-20) and POMO (1.41\% vs 3.72\%), though slightly trails Sym-NCO on CVRP-100 (3.17\% vs 2.88\%). The inference time remains competitive (5s vs 3s for baselines on CVRP-100). With 16-sample sampling, EDISCO achieves best results on larger instances (0.35\% on CVRP-50, 0.38\% on CVRP-100) with comparable runtime (18s vs 16s for Sym-NCO), though trailing POMO with augmentation on CVRP-20 (0.33\% vs 0.21\%).
+
+The 5-step DEIS-2 configuration provides 10× speedup over PNDM-50 while maintaining reasonable quality (2.01\% on CVRP-20, 4.53\% on CVRP-100). This achieves fastest inference among neural methods (0.5s on CVRP-100), providing 6× speedup over greedy autoregressive approaches. The consistent 1.43× quality degradation from PNDM-50 to DEIS-2 demonstrates the flexibility of continuous-time diffusion for adjusting quality-speed trade-offs.
+
+These results highlight key differences between diffusion and autoregressive approaches. Autoregressive models like POMO generate solutions sequentially, enabling explicit augmentation strategies that evaluate problems from multiple geometric perspectives. POMO's 8× augmentation effectively multiplies the search space. In contrast, EDISCO operates on entire adjacency matrices simultaneously, denoising complete solutions rather than constructing them step-by-step. While this parallel generation captures global solution patterns more effectively, it cannot directly benefit from the same augmentation multipliers. However, the continuous-time formulation enables flexible solver selection for dynamically adjusting quality-speed trade-offs without retraining.
+}
 
 \section{Proofs}
 \label{sec:appendix:proofs}
