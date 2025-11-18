@@ -1,4 +1,6 @@
 ## Thank you for these valuable comments. We have revised the manuscript, trying to address your concerns (changes marked in blue).
+
+## **Response to Weakness 1:**
 ---
 ### (1) Node-Focused Geometric Tasks: Euclidean Steiner Tree
 
