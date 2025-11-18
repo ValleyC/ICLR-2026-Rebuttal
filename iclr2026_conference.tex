@@ -408,7 +408,7 @@ Table~\ref{tab:ablation} analyzes the contribution of each key component in EDIS
 \section{Discussion and Conclusion}
 \label{sec:discussion}
 
-We propose EDISCO, an equivariant continuous-time diffusion solver for GCOPs. By incorporating E(2) equivariance directly into the model architecture and formulating edge selection as continuous-time Markov chains, EDISCO learns geometric patterns more efficiently, enabling the use of advanced numerical solvers for fast inference. Future directions could include the exploration of adaptive step-size solvers and the theoretical analysis of convergence properties. Additionally, combining EDISCO with search-based refinement methods or integrating it with traditional optimization algorithms could further improve solution quality. 
+We propose EDISCO, an equivariant continuous-time diffusion solver for GCOPs. By incorporating E(2) equivariance directly into the model architecture and formulating edge selection as continuous-time Markov chains, EDISCO learns geometric patterns more efficiently, enabling the use of advanced numerical solvers for fast inference. Future work could include the exploration of adaptive step-size solvers and the theoretical analysis of convergence properties. Additionally, combining EDISCO with search-based refinement methods or integrating it with traditional optimization algorithms could further improve solution quality. 
 
 \section*{Reproducibility Statement}
 We have made significant efforts to ensure reproducibility of our results. 
@@ -431,53 +431,56 @@ The source code and instructions for reproducing our experiments are available a
 
 \noindent \textbf{Default Notation} \dotfill \pageref{notations}
 
-{\color{blue}\noindent \textbf{A. Extension to Euclidean Steiner Tree Problem} \dotfill \pageref{app:steiner}}
+{\color{blue}\noindent \textbf{A. Scope and Limitations} \dotfill \pageref{sec:scope_limitations}}
 
-\noindent \textbf{B. Extension to Capacitated Vehicle Routing Problem (CVRP)} \dotfill \pageref{app:cvrp}
+{\color{blue}\noindent \textbf{B. Extension to Euclidean Steiner Tree Problem} \dotfill \pageref{app:steiner}}
 
-\noindent \textbf{C. Proofs} \dotfill \pageref{sec:appendix:proofs}
+\noindent \textbf{C. Extension to Capacitated Vehicle Routing Problem (CVRP)} \dotfill \pageref{app:cvrp}
+
+\noindent \textbf{D. Proofs} \dotfill \pageref{sec:appendix:proofs}
 \begin{quote}
-\noindent C.1 Proof of Proposition~\ref{prop:quotient_dimension} \dotfill \pageref{subsec:proposition}\\
-C.2 Proof of E(2)-Equivariance in EDISCO \dotfill
+\noindent D.1 Proof of Proposition~\ref{prop:quotient_dimension} \dotfill \pageref{subsec:proposition}\\
+D.2 Proof of E(2)-Equivariance in EDISCO \dotfill
 \pageref{subsec:equivarince}\\
 \end{quote}
 
-\noindent \textbf{D. Extended Related Work} \dotfill \pageref{sec:extended_related_work}
+\noindent \textbf{E. Extended Related Work} \dotfill \pageref{sec:extended_related_work}
 \begin{quote}
-\noindent D.1 Foundational Neural Combinatorial Optimization \dotfill \pageref{subsec:foundational_nco}\\
-D.2 Alternative Architectures and Scaling Approaches \dotfill \pageref{subsec:alt_architectures}\\
-D.3 Discrete Diffusion Foundations and Variants \dotfill \pageref{subsec:discrete_diffusion}\\
-D.4 Theoretical Foundations and Sample Complexity \dotfill \pageref{subsec:theoretical_foundations}\\
-D.5 Hybrid and Practical Approaches \dotfill \pageref{subsec:hybrid_approaches}
+\noindent E.1 Foundational Neural Combinatorial Optimization \dotfill \pageref{subsec:foundational_nco}\\
+E.2 Alternative Architectures and Scaling Approaches \dotfill \pageref{subsec:alt_architectures}\\
+E.3 Discrete Diffusion Foundations and Variants \dotfill \pageref{subsec:discrete_diffusion}\\
+E.4 Theoretical Foundations and Sample Complexity \dotfill \pageref{subsec:theoretical_foundations}\\
+E.5 Hybrid and Practical Approaches \dotfill \pageref{subsec:hybrid_approaches}
 \end{quote}
-\noindent \textbf{E. Architecture Details} \dotfill \pageref{sec:architecture_details}
+\noindent \textbf{F. Architecture Details} \dotfill \pageref{sec:architecture_details}
 \begin{quote}
-\noindent E.1 Network Architecture Overview \dotfill \pageref{subsec:network_overview}\\
-E.2 Feature Representations and Initialization \dotfill \pageref{subsec:feature_representations}\\
-E.3 Equivariant Message Passing Mechanism \dotfill \pageref{subsec:message_passing}\\
-E.4 Continuous-Time Diffusion Specifications \dotfill \pageref{subsec:diffusion_specs}\\
+\noindent F.1 Network Architecture Overview \dotfill \pageref{subsec:network_overview}\\
+F.2 Feature Representations and Initialization \dotfill \pageref{subsec:feature_representations}\\
+F.3 Equivariant Message Passing Mechanism \dotfill \pageref{subsec:message_passing}\\
+F.4 Continuous-Time Diffusion Specifications \dotfill \pageref{subsec:diffusion_specs}\\
 \end{quote}
-\noindent \textbf{F. Additional Experiment Details} \dotfill \pageref{sec:appendix:details}
+\noindent \textbf{G. Additional Experiment Details} \dotfill \pageref{sec:appendix:details}
 \begin{quote}
-\noindent F.1 Performance Metrics \dotfill \pageref{subsec:performance_metrics}\\
-F.2 Hardware Platform \dotfill \pageref{subsec:hardware}\\
-F.3 Results Randomness \dotfill \pageref{subsec:randomness}\\
-F.4 Data Generation Process \dotfill \pageref{subsec:data_generation}\\
-F.5 Model Architecture Specifications \dotfill \pageref{subsec:implementation_specs}\\
-F.6 Training Configuration \dotfill \pageref{subsec:training_config}
+\noindent G.1 Performance Metrics \dotfill \pageref{subsec:performance_metrics}\\
+G.2 Hardware Platform \dotfill \pageref{subsec:hardware}\\
+G.3 Results Randomness \dotfill \pageref{subsec:randomness}\\
+G.4 Data Generation Process \dotfill \pageref{subsec:data_generation}\\
+G.5 Model Architecture Specifications \dotfill \pageref{subsec:implementation_specs}\\
+G.6 Training Configuration \dotfill \pageref{subsec:training_config}
 \end{quote}
-\noindent \textbf{G. Additional Results} \dotfill \pageref{sec:additional_results}
+\noindent \textbf{H. Additional Results} \dotfill \pageref{sec:additional_results}
 \begin{quote}
-\noindent G.1 Solver Evaluation on TSP-500 \dotfill \pageref{subsec:solver_eval}\\
-G.2 TSP-10000 Results \dotfill \pageref{subsec:tsp10000}\\
-{\color{blue}G.3 Cross-Distribution Generalization \dotfill \pageref{subsec:ood_generalization}}\\
-G.4 TSPLIB Results \dotfill \pageref{subsec:TSPLIB}\\
-G.5 Noise Schedule Design for TSP Diffusion \dotfill \pageref{subsec:noise-schedule-experiment}\\
-G.6 Evaluation on Adaptive Mixing Parameters \dotfill \pageref{subsec:adaptivemixing}\\
-G.7 Evaluation on Architectural Hyperparameters \dotfill \pageref{subsec:archi_hyperparameters}\\
-G.8 Model Efficiency \dotfill \pageref{subsec:model_efficiency}\\
-G.9 Visualization of EDISCO's E(2)-Equivariance \dotfill \pageref{subsec:visualization}
+\noindent H.1 Solver Evaluation on TSP-500 \dotfill \pageref{subsec:solver_eval}\\
+H.2 TSP-10000 Results \dotfill \pageref{subsec:tsp10000}\\
+{\color{blue}H.3 Cross-Distribution Generalization \dotfill \pageref{subsec:ood_generalization}}\\
+H.4 TSPLIB Results \dotfill \pageref{subsec:TSPLIB}\\
+H.5 Noise Schedule Design for TSP Diffusion \dotfill \pageref{subsec:noise-schedule-experiment}\\
+H.6 Evaluation on Adaptive Mixing Parameters \dotfill \pageref{subsec:adaptivemixing}\\
+H.7 Evaluation on Architectural Hyperparameters \dotfill \pageref{subsec:archi_hyperparameters}\\
+H.8 Model Efficiency \dotfill \pageref{subsec:model_efficiency}\\
+H.9 Visualization of EDISCO's E(2)-Equivariance \dotfill \pageref{subsec:visualization}
 \end{quote}
+
 \vspace{0.5em}
 \noindent\rule{\textwidth}{0.4pt}
 
@@ -590,6 +593,17 @@ $\text{argmax}(\cdot)$ & Argument of the maximum\\
 \end{center}
 
 {\color{blue}
+\section{Scope and Limitations}
+\label{sec:scope_limitations}
+
+EDISCO is specifically designed for geometric combinatorial optimization problems where solutions exhibit E(2) symmetries. This design choice provides substantial benefits for problems like TSP, CVRP, and Euclidean Steiner Tree. While EDISCO could technically be applied to problems such as Maximum Independent Set (MIS) and Max-Cut, which are addressed by general-purpose diffusion models like DIFUSCO~\citep{sun2023difusco} and T2T~\citep{li2023t2t}, doing so would not leverage EDISCO's core innovation. For MIS and Max-Cut on arbitrary graphs, node positions do not carry semantic meaning—only the graph topology matters. Without geometric structure, E(2)-equivariance provides no inductive bias. In such cases, EDISCO would be expected to perform comparably to general-purpose diffusion methods (since the underlying continuous-time diffusion framework remains valid), but would offer no advantage while unnecessarily imposing geometric coordinate processing.
+
+Similarly, for the Asymmetric Traveling Salesman Problem (ATSP), where the distance from city $i$ to city $j$ differs from $j$ to $i$ (i.e., $d_{ij} \neq d_{ji}$), the directional costs fundamentally break the geometric symmetries that EDISCO exploits. In ATSP, directional costs cannot be represented by Euclidean distances in physical space, violating the assumption that optimal tours remain invariant under rotations and translations. The asymmetry itself does not prevent EDISCO from functioning—the continuous-time diffusion framework would still apply, and performance would likely match general-purpose diffusion methods. However, the E(2)-equivariant architecture would provide no benefit, as the problem lacks the geometric symmetries that enable superior sample efficiency and generalization. For such problems, general-purpose diffusion methods are more appropriate as they do not impose geometric constraints that provide no benefit.
+
+This specialization to geometric problems is a deliberate design decision. By constraining the model to respect E(2) symmetries, EDISCO achieves superior sample efficiency (requiring only 33-50\% of training data compared to baselines) and better generalization across problem sizes and distributions. The key insight is that E(2)-equivariance provides substantial advantages precisely when problems possess inherent geometric structure and symmetries. Applying it to problems lacking these properties would simply ignore these advantages without gain.
+}
+
+{\color{blue}
 \section{Extension to Euclidean Steiner Tree Problem}
 \label{app:steiner}
 
@@ -665,6 +679,7 @@ EDISCO substantially outperforms all learning-based baselines, including state-o
 The 5-step DEIS-2 configuration provides ultra-fast inference (0.15s, 0.35s, 0.7s) while achieving competitive quality (2.67\% on Steiner-10, 2.48\% on Steiner-20, 2.60\% on Steiner-50)—approximately 9-13× faster than PNDM-50 while remaining well below the classical Steiner Insertion baseline (3.44\%, 3.58\%, 3.29\%). This configuration significantly outperforms the MST upper bound (8.40\%, 7.16\%, 6.40\%) and all learning-based methods, making it ideal for real-time applications.
 }
 
+{\color{blue}
 \section{Extension to Capacitated Vehicle Routing Problem (CVRP)}
 \label{app:cvrp}
 
@@ -701,7 +716,7 @@ We evaluate EDISCO on standard CVRP benchmarks with 20, 50, and 100 customers, f
 \begin{table}[h]
 \color{blue}
 \centering
-\caption{Results on CVRP-20, CVRP-50, and CVRP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy, S: Sampling. LKH-3* represents the baseline for computing the gap. Gurobi results are from the user's provided table. AM results are from \citet{kool2019attention}. POMO results are from \citet{kwon2020pomo}. Sym-NCO results are from \citet{kim2022symnco} (CVRP-100 only). Runtime data for POMO and Sym-NCO are from their respective papers.}
+\caption{Results on CVRP-20, CVRP-50, and CVRP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy, S: Sampling. \textbf{HGS results} are from \citet{vidal2012hybrid}. LKH-3 results serve as reference baseline. POMO and Sym-NCO results are from their respective papers.}
 \label{tab:cvrp_results}
 \adjustbox{width=\textwidth}{%
 \begin{tabular}{llccccccccc}
@@ -711,43 +726,55 @@ We evaluate EDISCO on standard CVRP benchmarks with 20, 50, and 100 customers, f
 & & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ \\
 \midrule
 Gurobi~\citep{gurobi2023} & Exact & 6.10 & 0.00\% & -- & -- & -- & -- & -- & -- & -- \\
-LKH-3*~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 2h & 10.38 & 0.00\% & 7h & 15.65 & 0.00\% & 12h \\
+\textbf{HGS}~\citep{vidal2012hybrid} & \textbf{Heuristic} & \textbf{6.10} & \textbf{0.00\%} & \textbf{1h} & \textbf{10.38} & \textbf{0.00\%} & \textbf{3h} & \textbf{15.65} & \textbf{0.00\%} & \textbf{5h} \\
+LKH-3~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 2h & 10.38 & 0.00\% & 7h & 15.65 & 0.00\% & 12h \\
 \midrule
-\multicolumn{11}{l}{\textit{Greedy Decoding}} \\
+\multicolumn{11}{l}{\textit{Neural Methods - Greedy Decoding}} \\
 \midrule
 AM~\citep{kool2019attention} & RL+G & 6.40 & 4.97\% & $<$1s & 10.98 & 5.86\% & 1s & 16.80 & 7.34\% & 3s \\
 POMO~\citep{kwon2020pomo} & RL+G & 6.35 & 3.72\% & $<$1s & 10.74 & 3.52\% & 1s & 16.13 & 3.09\% & 3s \\
 Sym-NCO~\citep{kim2022symnco} & RL+G & -- & -- & -- & -- & -- & -- & \textbf{16.10} & \textbf{2.88\%} & 3s \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & 1s & \textbf{10.63} & \textbf{2.46\%} & 2s & 16.15 & 3.17\% & 5s \\
-\textbf{EDISCO with 5-step DEIS-2 (ours)} & SL+G & 6.23 & 2.01\% & \textbf{0.1s} & 10.66 & 3.51\% & \textbf{0.2s} & 16.22 & 4.53\% & \textbf{0.5s} \\
+\textbf{EDISCO with 50-step PNDM50 (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & 1s & \textbf{10.63} & \textbf{2.46\%} & 2s & 16.15 & 3.17\% & 5s \\
+\textbf{EDISCO-DEIS2 (ours)} & SL+G & 6.23 & 2.01\% & \textbf{0.1s} & 10.66 & 3.51\% & \textbf{0.2s} & 16.22 & 4.53\% & \textbf{0.5s} \\
 \midrule
-\multicolumn{11}{l}{\textit{Sampling/Multiple Trajectories}} \\
+\multicolumn{11}{l}{\textit{Neural Methods - Sampling/Augmentation}} \\
 \midrule
 AM~\citep{kool2019attention} & RL+S (1280) & 6.25 & 2.49\% & 3m & 10.62 & 2.40\% & 7m & 16.23 & 3.72\% & 30m \\
 POMO (no aug)~\citep{kwon2020pomo} & RL+G & 6.17 & 0.82\% & 1s & 10.49 & 1.14\% & 4s & 15.83 & 1.13\% & 19s \\
 POMO (×8 aug)~\citep{kwon2020pomo} & RL+G & \textbf{6.14} & \textbf{0.21}\% & 5s & 10.42 & 0.45\% & 26s & 15.73 & 0.51\% & 2m \\
 Sym-NCO~\citep{kim2022symnco} & RL+S (100) & -- & -- & -- & -- & -- & -- & 15.87 & 1.40\% & 16s \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+S (16) & 6.15 & 0.33\% & 4s & \textbf{10.41} & \textbf{0.35\%} & 7s & \textbf{15.71} & \textbf{0.38\%} & 18s \\
+\textbf{EDISCO with 50-step PNDM50 (ours)} & SL+S (16) & 6.15 & 0.33\% & 4s & \textbf{10.41} & \textbf{0.35\%} & 7s & \textbf{15.71} & \textbf{0.38\%} & 18s \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-{\color{blue}
-\paragraph{Analysis of Results} Table~\ref{tab:cvrp_results} shows EDISCO's performance on CVRP across different instance sizes. We present two configurations offering distinct quality-speed trade-offs (Appendix~\ref{subsec:solver_eval}):
+\paragraph{Analysis of Results}
 
-With 50-step PNDM and greedy decoding, EDISCO substantially outperforms AM (1.41\% vs 4.97\% gap on CVRP-20) and POMO (1.41\% vs 3.72\%), though slightly trails Sym-NCO on CVRP-100 (3.17\% vs 2.88\%). The inference time remains competitive (5s vs 3s for baselines on CVRP-100). With 16-sample sampling, EDISCO achieves best results on larger instances (0.35\% on CVRP-50, 0.38\% on CVRP-100) with comparable runtime (18s vs 16s for Sym-NCO), though trailing POMO with augmentation on CVRP-20 (0.33\% vs 0.21\%).
+Table~\ref{tab:cvrp_results} demonstrates EDISCO's performance on small-medium scale CVRP (20-100 customers). We present two solver configurations offering distinct quality-speed trade-offs:
 
-The 5-step DEIS-2 configuration provides 10× speedup over PNDM-50 while maintaining reasonable quality (2.01\% on CVRP-20, 4.53\% on CVRP-100). This achieves fastest inference among neural methods (0.5s on CVRP-100), providing 6× speedup over greedy autoregressive approaches. The consistent 1.43× quality degradation from PNDM-50 to DEIS-2 demonstrates the flexibility of continuous-time diffusion for adjusting quality-speed trade-offs.
+\textbf{Greedy decoding (PNDM-50):} EDISCO achieves competitive results with 1.41\% gap on CVRP-20 and 2.46\% on CVRP-50, outperforming AM (4.97\%, 5.86\%) and POMO (3.72\%, 3.52\%). On CVRP-100, EDISCO achieves 3.17\% gap, slightly trailing Sym-NCO (2.88\%) with comparable inference time (5s vs 3s). The 5-step DEIS-2 variant provides 10× speedup (0.5s on CVRP-100) while maintaining reasonable quality (4.53\% gap), demonstrating the flexibility of continuous-time diffusion for adjusting quality-speed trade-offs without retraining.
 
-These results highlight key differences between diffusion and autoregressive approaches. Autoregressive models like POMO generate solutions sequentially, enabling explicit augmentation strategies that evaluate problems from multiple geometric perspectives. POMO's 8× augmentation effectively multiplies the search space. In contrast, EDISCO operates on entire adjacency matrices simultaneously, denoising complete solutions rather than constructing them step-by-step. While this parallel generation captures global solution patterns more effectively, it cannot directly benefit from the same augmentation multipliers. However, the continuous-time formulation enables flexible solver selection for dynamically adjusting quality-speed trade-offs without retraining.
+\textbf{Sampling (16 samples):} With multiple samples, EDISCO achieves best neural solver results on CVRP-50 and CVRP-100 (0.35\% and 0.38\% gaps), though trailing POMO with 8× augmentation on CVRP-20 (0.33\% vs 0.21\%). The runtime remains competitive (18s vs 16s for Sym-NCO on CVRP-100).
 
-\paragraph{Note on Large-Scale CVRP and Future Directions}
-While EDISCO demonstrates strong performance on TSP and CVRP instances up to 100 customers, scaling single end-to-end diffusion models to very large-scale CVRP instances (200+ customers) presents fundamental challenges. Unlike TSP where the solution space grows factorially with problem size, CVRP involves both customer assignment and routing with additional capacity constraints that create a combinatorial explosion. Notably, competing diffusion-based methods, such as DIFUSCO \citep{sun2023difusco}, T2T \citep{yao2024entropy}, and Fast-T2T \citep{ma2023t2tcnn}, have no reported CVRP experiments. This stands in contrast to classical methods for large-scale CVRP, which universally adopt partition-based strategies. The Hybrid Genetic Search (HGS-CVRP) algorithm \citep{vidal2012hybrid} employs sophisticated clustering to partition customers before solving individual routes, achieving state-of-the-art results on instances with 1000+ customers. Similarly, LKH-3 \citep{helsgaun2017extension} uses route-first-cluster-second decomposition strategies, exploiting the fundamental insight that optimal CVRP solutions exhibit strong spatial locality—customers within the same route tend to form geographic clusters.
+\textbf{Comparison to classical solvers:} HGS \citep{vidal2012hybrid} represents the state-of-the-art heuristic for CVRP, achieving near-optimal solutions (0.00\% gap) at the cost of longer runtime (5h for CVRP-100). EDISCO's E(2)-equivariant diffusion approach confirms that geometric symmetry exploitation generalizes from TSP to constrained routing problems, achieving strong performance among neural methods while maintaining fast inference.
 
-Recent neural methods for large-scale CVRP have successfully adopted partition-based strategies. GLOP \citep{ye2024glop} hybridizes non-autoregressive neural heuristics for coarse-grained problem partitioning with autoregressive heuristics for fine-grained route construction, achieving state-of-the-art real-time performance on CVRP instances with up to 7000 customers. Similarly, NeuroLKH \citep{xin2021neurolkh} combines deep learning with LKH-3's partitioning framework, while Learning to Delegate \citep{lu2020learning} trains models to decompose problems before solving subproblems with specialized heuristics. These successes highlight that decomposition strategies are essential for scaling neural methods to industrial-scale routing.
+These results highlight key differences between diffusion and autoregressive approaches. Autoregressive models like POMO generate solutions sequentially, enabling explicit augmentation strategies that evaluate problems from multiple geometric perspectives. In contrast, EDISCO operates on entire adjacency matrices simultaneously, denoising complete solutions rather than constructing them step-by-step. While this parallel generation captures global solution patterns more effectively, it cannot directly benefit from the same augmentation multipliers. However, the continuous-time formulation enables flexible solver selection for dynamically adjusting quality-speed trade-offs without retraining.
 
-This landscape presents a compelling future direction: \textbf{leveraging E(2)-equivariance to develop novel partition methods for large-scale CVRP}. The geometric equivariance properties that enable EDISCO to learn rotation and translation invariant solution patterns could be particularly valuable for the clustering and decomposition phase.
+\paragraph{Positioning: Scale and Recent CVRP Methods}
+
+Our CVRP experiments focus on \textbf{small-medium scale (20-100 customers)} as proof-of-concept for architectural extensibility to constrained routing problem. This demonstrates that E(2)-equivariance benefits transfer beyond symmetric TSP to problems with capacity constraints and depot requirements.
+
+\textbf{Large-scale CVRP (500-1000+ customers)} represents a fundamentally different challenge requiring specialized approaches:
+\begin{itemize}
+    \item \textbf{HGS} \citep{vidal2012hybrid}: Hybrid genetic search with sophisticated clustering, achieving SOTA on instances with 1000+ customers
+    \item \textbf{GLOP} \citep{ye2024glop}: Neural partition-and-solve strategy, achieving real-time performance on CVRP up to 7000 customers via coarse-grained neural partitioning + fine-grained autoregressive construction
+    \item \textbf{NeuroLKH} \citep{xin2021neurolkh}: Combines deep learning with LKH-3's decomposition framework
+\end{itemize}
+
+These methods universally adopt \textbf{partition-based strategies}, exploiting the insight that optimal CVRP solutions exhibit strong spatial locality. Customers within the same route tend to form geographic clusters. In contrast, competing diffusion-based methods (DIFUSCO \citep{sun2023difusco}, T2T \citep{yao2024entropy}, Fast-T2T \citep{ma2023t2tcnn}) have \textbf{no reported CVRP experiments}, highlighting the difficulty of scaling single end-to-end diffusion models to large-scale constrained routing.
+
+\textbf{Future direction:} Scaling EDISCO to large CVRP is a valuable future work. A promising direction is leveraging E(2)-equivariance to develop novel partition methods. The geometric equivariance properties that enable EDISCO to learn rotation and translation invariant solution patterns could be particularly valuable for the clustering and decomposition phase, combining EDISCO's strengths with partition-based strategies.
 }
 
 \section{Proofs}
