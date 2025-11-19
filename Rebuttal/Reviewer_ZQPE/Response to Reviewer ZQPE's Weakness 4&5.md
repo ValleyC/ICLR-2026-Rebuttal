@@ -1,17 +1,17 @@
-## Thank you for these valuable comments.
+## Thank you for these valuable comments. We have revised the manuscript to address your concerns (changes marked in blue).
 ---
 
 ## **Response to Weakness 4:**
 
 We sincerely appreciate this important observation. In the revised manuscript, we have added both empirical and theoretical justifications for our adaptive mixing strategy design:
 
-**1. Theoretical Motivation (Added to Section 3.1 and Appendix H.6 "Theoretical Motivation" paragraph):**
+**1. Theoretical Motivation:**
 
-We now provide SNR-based theoretical justification grounded in established diffusion model literature. Reverse diffusion exhibits a **monotonically increasing signal-to-noise ratio (SNR)** as time decreases [25, 31]. The linear schedule $w(t) = t$ provides the simplest monotonic interpolation that aligns with this SNR progression. It favors stochastic exploration at high-noise timesteps and deterministic exploitation when the model's predictions become more reliable. This behavior is consistent with standard practice in diffusion models, where **linear noise schedules** remain widely adopted defaults due to their stability and simplicity [32].
+We now provide SNR-based theoretical justification **(added to Section 3.1 and Appendix H.6 "Theoretical Motivation" paragraph)** grounded in established diffusion model literature. Reverse diffusion exhibits a **monotonically increasing signal-to-noise ratio (SNR)** as time decreases [19]. The linear schedule $w(t) = t$ provides the simplest monotonic interpolation that aligns with this SNR progression. It favors stochastic exploration at high-noise timesteps and deterministic exploitation when the model's predictions become more reliable. This behavior is consistent with standard practice in diffusion models, where **linear noise schedules** remain widely adopted defaults due to their stability and simplicity.
 
-**2. Comprehensive Empirical Validation (Appendix H.6):**
+**2. Comprehensive Empirical Validation:**
 
-Appendix H.6 evaluates seven candidate schedules (linear, quadratic, cosine, exponential, square-root, constant, noise-free) and multiple switching rules across TSP-50/100/500. The **linear schedule with deterministic switching** consistently provides the best balance between solution quality, stability, and failure rate.
+As the original submission already presented, **Appendix H.6** evaluates seven candidate schedules (linear, quadratic, cosine, exponential, square-root, constant, noise-free) and multiple switching rules across TSP-50/100/500. The **linear schedule with deterministic switching** consistently provides the best balance between solution quality, stability, and failure rate.
 
 **3. Instance-Aware Strategies:**
 
@@ -21,6 +21,6 @@ We acknowledge that using instance-aware strategies is a good idea. However, suc
 
 ## **Response to Weakness 5:**
 
-We sincerely appreciate this suggestion. To directly address this question, we have added a comprehensive ablation study in the revised manuscript (**Table 3**) that systematically removes combinations of EDISCO's three key components. In addition to our previous ablation study, which removed one component at a time, we now added three more combinations that keep only one component at a time: **(EGNN only, continuous-time diffusion only, and adaptive mixing strategy only)**. We have also chosen the vanilla DIFUSCO as the equivalent baseline. 
+We sincerely appreciate this suggestion. To directly address this question, we have added a comprehensive ablation study in the revised manuscript (**Table 3**) that systematically removes combinations of EDISCO's three key components. In addition to our previous ablation study, which removed one component at a time, we now added **three more combinations** that keep only **one component at a time**: **(EGNN only, continuous-time diffusion only, and adaptive mixing strategy only)**. We have also chosen the **vanilla DIFUSCO** as the equivalent baseline. 
 
-This design enables us to construct "DIFUSCO + EGNN" (the **EGNN Only** setting in **Table 3**) and isolate the architectural contribution of E(2)-equivariance. "DIFUSCO + EGNN" achieves 3.58% & 5.06% gaps on TSP-500/1000, demonstrating 2.63x & 2.22x improvements over vanilla DIFUSCO (9.41% & 11.24%). This isolates the architectural contribution of E(2)-equivariance.
+This design enables us to construct "DIFUSCO + EGNN" (the **EGNN Only** setting in **Table 3**) and isolate the architectural contribution of E(2)-equivariance. "DIFUSCO + EGNN" achieves 3.58% & 5.06% gaps on TSP-500/1000, demonstrating **2.63x & 2.22x** improvements over vanilla DIFUSCO (9.41% & 11.24%). This isolates the architectural contribution of E(2)-equivariance.

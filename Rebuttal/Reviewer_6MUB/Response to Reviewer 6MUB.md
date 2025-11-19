@@ -4,11 +4,11 @@
 
 ## **Response to Weakness 1:**
 
-We thank the reviewer for this comment. However, we would like to ask if there is a misunderstanding or an oversight. **Table 1** (TSP-50/100) compares EDISCO with neural methods using **Concorde** as the exact baseline. we do not include LKH-3 in Table 1. **LKH-3** appears only in **Table 2** (TSP-500/1000), where it achieves 0.00% gap on both TSP-500 and TSP-1000.
+We thank the reviewer for this comment. However, we would like to ask if there is a misunderstanding or an oversight. **Table 1** (TSP-50/100) compares EDISCO with neural methods using **Concorde** as the exact baseline. We **did not include LKH-3** in Table 1. **LKH-3** appears only in **Table 2** (TSP-500/1000), where it achieves 0.00% gap on both TSP-500 and TSP-1000.
 
 Could the reviewer kindly clarify which specific table or result appears incorrect? We would be happy to investigate further and provide additional verification if needed.
 
-Please see **Table 1** (TSP-50/100 without LKH-3) and **Table 2** (TSP-500/1000 with LKH-3).
+Please see **Table 1** (TSP-50/100 **without** LKH-3) and **Table 2** (TSP-500/1000 **with** LKH-3).
 
 ---
 
@@ -36,7 +36,7 @@ We thank the reviewer for this suggestion. We have substantially strengthened th
 
 **Baselines Added:**
 
-We have included **Fast-T2T** [3] and **BQ-NCO** [4] as new baselines in our experimental results:
+We have included **Fast-T2T** [1] and **BQ-NCO** [2] as new baselines in our experimental results:
 
 - **Fast-T2T**: Added to **Table 1** (TSP-50/100), **Table 2** (TSP-500/1000), **Appendix H.3: Cross-Distribution Generalization** (evaluation across Uniform/Cluster/Explosion/Implosion distributions), and **Appendix H.4: TSPLIB Evaluation**.
 
