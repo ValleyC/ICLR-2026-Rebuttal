@@ -110,8 +110,29 @@ Vinyals, O., Fortunato, M., & Jaitly, N. (2015). Pointer networks. *Advances in 
 
 ## Theoretical Foundations
 
-**[25] Finsler Multi-Dimensional Scaling**
+**[25] DDPM (Denoising Diffusion Probabilistic Models)**
+Ho, J., Jain, A., & Abbeel, P. (2020). Denoising diffusion probabilistic models. *Advances in Neural Information Processing Systems*, 33, 6840-6851.
+
+**[26] Score-Based Generative Modeling**
+Song, Y., & Ermon, S. (2019). Generative modeling by estimating gradients of the data distribution. *Advances in Neural Information Processing Systems*, 32.
+
+**[27] Classifier-Free Guidance**
+Ho, J., & Salimans, T. (2022). Classifier-free diffusion guidance. *arXiv preprint arXiv:2207.12598*.
+
+**[28] DDIM (Denoising Diffusion Implicit Models)**
+Song, J., Meng, C., & Ermon, S. (2021). Denoising diffusion implicit models. *International Conference on Learning Representations*.
+
+**[29] Learning Rate Schedules**
+Loshchilov, I., & Hutter, F. (2017). SGDR: Stochastic gradient descent with warm restarts. *International Conference on Learning Representations*.
+
+**[30] Finsler Multi-Dimensional Scaling**
 Dagès, T., Weber, S., Lin, Y.-W. E., Talmon, R., Cremers, D., Lindenbaum, M., Bruckstein, A. M., & Kimmel, R. (2025). Finsler multi-dimensional scaling: Manifold learning for asymmetric dimensionality reduction and embedding. *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition*.
+
+**[31] Score-Based Generative Modeling through SDEs**
+Song, Y., Sohl-Dickstein, J., Kingma, D. P., Kumar, A., Ermon, S., & Poole, B. (2021). Score-based generative modeling through stochastic differential equations. *International Conference on Learning Representations*.
+
+**[32] Improved Denoising Diffusion Probabilistic Models**
+Nichol, A. Q., & Dhariwal, P. (2021). Improved denoising diffusion probabilistic models. *International Conference on Machine Learning*, 139, 8162-8171.
 
 ---
 
@@ -125,7 +146,7 @@ Dagès, T., Weber, S., Lin, Y.-W. E., Talmon, R., Cremers, D., Lindenbaum, M., B
 - **[19-21]**: Classical and hybrid methods
 - **[22-23]**: ATSP-specific methods
 - **[24]**: Other neural methods
-- **[25]**: Theoretical foundations
+- **[25-32]**: Theoretical foundations (diffusion models, optimization theory)
 
 ---
 
@@ -134,5 +155,7 @@ Dagès, T., Weber, S., Lin, Y.-W. E., Talmon, R., Cremers, D., Lindenbaum, M., B
 These references are cited across:
 - **Response to Weakness 1**: Covers comparisons with recent work, method positioning, and scope clarifications
 - **Response to Weakness 2**: Discusses relationships with concurrent developments and alternative paradigms
+- **Response to Weakness 4**: Theoretical justification for linear mixing schedule using SNR-based diffusion theory [25, 31, 32]
+- **Response to Weakness 5**: Component ablation study isolating EGNN's contribution
 
 All references correspond to entries in the manuscript's bibliography file (`iclr2026_conference.bib`).

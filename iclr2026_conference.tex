@@ -151,12 +151,14 @@ The reverse process reconstructs clean data from noise by iteratively applying l
 
 Since the true $\mathbf{X}_0$ is unknown during inference, we need a neural network $s_\theta(\mathbf{X}_t, t, \{\mathbf{c}_i\})$ to predict it when given the noisy state and time. This parameterization, known as $x_0$-prediction, is more stable than alternative parameterizations like noise prediction, especially in the low-noise region where reconstruction accuracy is significant~\citep{salimans2022progressive}.
 
+{\color{blue}
 In EDISCO, we use an adaptive mixing strategy that dynamically balances between diffusion-based transitions and direct model predictions:
 \begin{equation}
     p_{\text{reverse}} = w(t) \cdot p_{\text{diffusion}} + (1 - w(t)) \cdot p_{\text{predicted}}
     \label{eq:adaptive_mixing}
 \end{equation}
-where $w(t) = t$ linearly decreases from 1 to 0 as the reverse process progresses. This design is motivated by the observation that early in the reverse process (large $t$), the noisy state contains little information about the target, making the diffusion dynamics essential for exploration. As $t$ decreases and the signal emerges, direct predictions become increasingly reliable and should dominate to ensure precise reconstruction. For very small timesteps where $t < 0.1$ or $|\Delta t| < 0.02$, we switch entirely to deterministic transitions using the argmax of predicted probabilities. This strategy is evaluated in Appendix~\ref{subsec:adaptivemixing}.
+where $w(t) = t$ linearly decreases from 1 to 0 as the reverse process progresses. This design is grounded in both empirical observations and theoretical principles. Empirically, early in the reverse process (large $t$), the noisy state contains little information about the target, making the diffusion dynamics essential for exploration. As $t$ decreases and the signal emerges, direct predictions become increasingly reliable and should dominate to ensure precise reconstruction. Theoretically, reverse diffusion exhibits a monotonically increasing signal-to-noise ratio (SNR) as time decreases~\citep{ho2020denoising,song2021scorebased}. The linear schedule provides the simplest monotonic interpolation that aligns with this SNR progression, consistent with standard practice in diffusion models~\citep{nichol2021improved}. For very small timesteps where $t < 0.1$ or $|\Delta t| < 0.02$, we switch entirely to deterministic transitions using the argmax of predicted probabilities. This strategy is comprehensively evaluated in Appendix~\ref{subsec:adaptivemixing}.
+}
 
 \subsection{Equivariant Graph Neural Network Architecture}
 
@@ -358,12 +360,12 @@ The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-opt
 
 \begin{wrapfigure}{l}{0.4\textwidth}
 \centering
-\vspace{-0.5cm}
+% \vspace{-0.5cm}
 \includegraphics[width=0.4\textwidth]{graphs/generalization.pdf}
 \vspace{-0.8cm}
 \caption{Generalization performance across TSP sizes under greedy decoding.}
 \label{fig:generalization}
-\vspace{-0.2cm}
+% \vspace{-0.2cm}
 \end{wrapfigure}
 
 \paragraph{TSP-500/1000 Results}
@@ -371,32 +373,34 @@ Table~\ref{tab:large_results} presents results on larger-scale TSP instances. ED
 
 \paragraph{Generalization} 
 
-We study the generalization ability of EDISCO by training models on each problem scale from \{TSP-50, TSP-100, TSP-500, TSP-1000\} and evaluating them across all scales with only the greedy decoder. Figure~\ref{fig:generalization} shows that EDISCO exhibits strong cross-size generalization, with models trained on TSP-1000 achieving gaps below 4.3\% on all other problem scales, and particularly impressive performance of 2.90\% on TSP-500. This generalizability outperforms other diffusion methods \citep{sun2023difusco, li2023t2t}.
-
-\paragraph{Robustness to Training Data Variations}
 \begin{wrapfigure}{r}{0.5\textwidth}
 \centering
 \vspace{-0.5cm}
 \includegraphics[width=0.5\textwidth]{graphs/data_experiments.pdf}
 \vspace{-0.8cm}
 \caption{Results on TSP-50 performance. Left: Optimality gap as a function of training set size. Right: Performance comparison when trained on optimal data versus heuristic Farthest Insertion data.}
-
 \label{fig:data_experiments}
 \vspace{-0.5cm}
 \end{wrapfigure}
+
+We study the generalization ability of EDISCO by training models on each problem scale from \{TSP-50, TSP-100, TSP-500, TSP-1000\} and evaluating them across all scales with only the greedy decoder. Figure~\ref{fig:generalization} shows that EDISCO exhibits strong cross-size generalization, with models trained on TSP-1000 achieving gaps below 4.3\% on all other problem scales, and particularly impressive performance of 2.90\% on TSP-500. This generalizability outperforms other diffusion methods \citep{sun2023difusco, li2023t2t}.
+
+\paragraph{Robustness to Training Data Variations}
 
 We evaluate EDISCO's robustness to variations in training data quantity and quality, which are critical factors for practical deployment where obtaining optimal solutions may be computationally expensive. The left panel of Figure~\ref{fig:data_experiments} illustrates that EDISCO maintains near-optimal performance even with limited data, achieving gaps below 0.07\% with just 10\% of training data, compared to 2.8\% for DIFUSCO and 2.1\% for T2T.
 
 The right panel of Figure~\ref{fig:data_experiments} examines model performance when trained on suboptimal solutions generated by the Farthest Insertion heuristic, which produces tours with an average gap of 7.5\% to optimal on TSP-50~\citep{li2023t2t}. EDISCO achieves a 0.82\% gap, outperforming DIFUSCO (2.75\%) and T2T (1.35\%). This experiment also only uses the greedy decoder for all methods.
 
-\paragraph{Ablation Studies}
+{\color{blue}
+\paragraph{Ablation Study}
 
 \begin{table}[h]
+\color{blue}
 \centering
-\caption{Ablation study on TSP-500 and TSP-1000. Each row removes one key component from the full EDISCO model.}
-\label{tab:ablation}
+\caption{Ablation study on TSP-500 and TSP-1000. The table evaluates all combinations of removing EDISCO's three key components. The baseline is equivalent to Vanilla DIFUSCO.}
+\label{tab:component_ablation}
 \small
-% \adjustbox{width=\textwidth}{%
+\adjustbox{max width=\textwidth}{%
 \begin{tabular}{lcccccccc}
 \toprule
 \multirow{2}{*}{\textbf{Model Variant}} & \multicolumn{3}{c}{\textbf{TSP-500}} & \multicolumn{3}{c}{\textbf{TSP-1000}} & \multirow{2}{*}{\textbf{Conv. Epoch}} \\
@@ -405,15 +409,24 @@ The right panel of Figure~\ref{fig:data_experiments} examines model performance 
 \midrule
 \textbf{EDISCO (Full)} & \textbf{16.87} & \textbf{1.95} & \textbf{2.19m} & \textbf{23.78} & \textbf{2.85} & \textbf{6.84m} & 35 \\
 \midrule
-w/o Equivariance & 17.14 & 3.58 & 2.31m & 24.29 & 5.06 & 7.15m & 48 \\
-w/o Continuous-time & 17.02 & 2.86 & 4.43m & 24.11 & 4.28 & 15.58m & 42 \\
-w/o Adaptive Mixing & 16.95 & 2.44 & 2.18m & 23.91 & 3.41 & 6.85m & 38 \\
+w/o Mix Strategy & 16.95 & 2.44 & 2.18m & 23.91 & 3.41 & 6.85m & 38 \\
+w/o Continuous-Time & 17.02 & 2.86 & 4.43m & 24.11 & 4.28 & 15.58m & 42 \\
+w/o EGNN & 17.49 & 5.71 & 2.31m & 24.85 & 7.49 & 7.15m & 51 \\
+\midrule
+EGNN Only & 17.14 & 3.58 & 4.52m & 24.29 & 5.06 & 16.12m & 48 \\
+Continuous Only & 17.72 & 7.09 & 2.45m & 25.26 & 9.27 & 7.42m & 58 \\
+Mix Only & 17.61 & 6.42 & 5.42m & 25.08 & 8.52 & 16.86m & 55 \\
+\midrule
+\textbf{Vanilla DIFUSCO} & 18.11 & 9.41 & 5.70m & 25.72 & 11.24 & 17.33m & 61 \\
 \bottomrule
 \end{tabular}%
-% }
+}
 \end{table}
 
-Table~\ref{tab:ablation} analyzes the contribution of each key component in EDISCO. Removing equivariance awareness causes the most significant degradation, increasing gaps from 1.95\% to 3.58\% on TSP-500 and from 2.85\% to 5.06\% on TSP-1000. It also requires 13 additional epochs to converge. The continuous-time formulation proves crucial for efficiency. Replacing it with DIFUSCO's discrete-time approach doubles inference time (4.43m vs 2.19m on TSP-500) while degrading performance by 0.91\% and 1.43\% respectively. The adaptive mixing strategy shows the smallest but still meaningful impact, with its removal increasing gaps by 0.49\% and 0.56\%. These results confirm that all three components are significant, with equivariance providing the strongest inductive bias for learning geometric patterns, continuous-time enabling efficient sampling, and adaptive mixing ensuring accurate final reconstructions.
+Table~\ref{tab:component_ablation} systematically evaluates each component's contribution. EGNN provides the largest individual impact: removing it degrades performance from 1.95\% to 5.71\% on TSP-500 (2.85\% to 7.49\% on TSP-1000) and requires 16 additional training epochs. Continuous-time diffusion doubles inference speed (2.19m vs 4.43m on TSP-500) while improving gaps by 0.91\% \& 1.43\%. Adaptive mixing contributes 0.49\% \& 0.56\% improvements.
+
+The \textbf{EGNN only} case achieves 3.58\% \& 5.06\% gaps, demonstrating 2.63$\times$ \& 2.22$\times$ improvements over vanilla DIFUSCO (9.41\% \& 11.24\%) and isolating EGNN's architectural contribution. Variants without EGNN perform substantially worse (6.42-7.09\% gaps), confirming equivariance as the core innovation.
+}
 
 % ============ DISCUSSION AND CONCLUSION SECTION ============
 
@@ -430,6 +443,7 @@ The source code and instructions for reproducing our experiments are available a
 
 % ============ REFERENCE ============
 % Bibliography section
+\newpage
 \bibliography{iclr2026_conference}
 \bibliographystyle{iclr2026_conference}
 
@@ -617,9 +631,9 @@ This architectural constraint distinguishes EDISCO from other neural TSP solvers
 
 Current ATSP solvers incorporate directional edge information, such as full cost-matrix encoding (MatNet~\citep{kwon2021matnet}) or dual incoming/outgoing attention mechanisms (GREAT~\citep{kuhn2024great}). These architectural features are incompatible with E(2)-equivariant coordinate encoders.
 
-\textbf{Promising Future Directions:} However, the continuous-time diffusion framework of EDISCO is generalizable. We identify two complementary research directions: (1) \textbf{Replace the encoder}: Adopt ATSP-capable encoders (e.g., MatNet, GREAT) while retaining the continuous-time diffusion framework. (2) \textbf{Learn coordinate embeddings}: Transform asymmetric cost matrices into approximate coordinate representations using techniques such as Finsler Multi-Dimensional Scaling~\cite{dages2025finsler}, which extends classical MDS to handle asymmetric dissimilarities by embedding into Finsler spaces rather than symmetric Riemannian manifolds, or neural metric learning approaches that learn distance-preserving coordinate embeddings. Such learned coordinates could enable approximate E(2)-equivariance for ATSP instances that admit near-geometric structure. The specialization to coordinate-based geometric problems is a deliberate architectural choice that enables the strong inductive bias from E(2)-equivariance for problems with inherent geometric structure.
+\textbf{Promising Future Directions:} However, the continuous-time diffusion framework of EDISCO is generalizable. We identify two complementary research directions: (1) \textbf{Replace the encoder}: Adopt ATSP-capable encoders (e.g., MatNet, GREAT) while retaining the continuous-time diffusion framework. (2) \textbf{Learn coordinate embeddings}: Transform asymmetric cost matrices into approximate coordinate representations using techniques such as Finsler Multi-Dimensional Scaling~\cite{dages2025finsler}, which extends classical MDS to handle asymmetric dissimilarities by embedding into Finsler spaces rather than symmetric Riemannian manifolds, or neural metric learning approaches that learn distance-preserving coordinate embeddings. Such learned coordinates could enable approximate E(2)-equivariance for ATSP instances that admit near-geometric structure. 
 
-This specialization to geometric problems is a deliberate design decision. By constraining the model to respect E(2) symmetries, EDISCO achieves superior sample efficiency (requiring only 33-50\% of training data compared to baselines) and better generalization across problem sizes and distributions. The key insight is that E(2)-equivariance provides substantial advantages precisely when problems possess inherent geometric structure and symmetries. Applying it to problems lacking these properties would simply ignore these advantages without gain.
+The specialization to coordinate-based geometric problems is a deliberate architectural choice that enables the strong inductive bias from E(2)-equivariance for problems with inherent geometric structure. By constraining the model to respect E(2) symmetries, EDISCO achieves superior sample efficiency (requiring only 33-50\% of training data compared to baselines) and better generalization across problem sizes and distributions. The key insight is that E(2)-equivariance provides substantial advantages precisely when problems possess inherent geometric structure and symmetries. Applying it to problems lacking these properties would simply discard these advantages without additional benefit.
 }
 
 {\color{blue}
@@ -1127,6 +1141,7 @@ T2T~\citep{li2023t2t} & SL+G & 20 & $\sim$60 & 17.39 & 5.09\% & 4.90 \\
 \end{tabular}%
 }
 \end{table}
+\vspace{-0.5cm}
 To demonstrate the flexibility and efficiency of continuous-time diffusion, we conduct a comprehensive evaluation of various numerical solvers on TSP-500. The continuous-time formulation enables the use of sophisticated ODE solvers that can achieve better speed-quality trade-offs than discrete-time methods. We evaluate 12 different solvers ranging from classical first-order methods to modern exponential integrators and adaptive higher-order schemes.
 
 Table~\ref{tab:solver_tsp500_complete} presents the results across different solver families. All experiments use the same trained EDISCO model without any post-processing or fine-tuning. Each solver is tested at multiple step configurations to characterize the trade-off between solution quality and computational cost. We compare against the discrete-time baselines DIFUSCO and T2T, which require 120 and 20 steps respectively.
@@ -1354,7 +1369,14 @@ The superiority of linear schedules in TSP contrasts with image generation, wher
 
 \subsection{Evaluation on Adaptive Mixing Parameters}
 \label{subsec:adaptivemixing}
+{\color{blue}
 We conduct a comprehensive evaluation on the adaptive mixing strategy parameters to justify our design choices. The adaptive mixing strategy (Equation \ref{eq:adaptive_mixing}) balances between diffusion-based transitions and direct model predictions using a time-dependent weight function $w(t)$, with deterministic switching near $t = 0$.
+
+\paragraph{Theoretical Motivation}
+The linear mixing schedule is grounded in the monotonic relationship between timestep $t$ and signal-to-noise ratio (SNR) in reverse diffusion processes~\citep{ho2020denoising, song2021scorebased}. As the reverse process progresses from $t=1$ to $t=0$, the SNR monotonically increases, meaning the denoised state becomes increasingly informative about the true target. At high noise levels (large $t$), the noisy state provides limited signal, making stochastic diffusion dynamics essential for exploration. As $t$ decreases and SNR increases, direct model predictions become more reliable and should dominate to ensure precise reconstruction.
+
+The linear weight function $w(t) = t$ provides the simplest monotonic interpolation that naturally aligns with this SNR progression. This approach is consistent with standard practice in diffusion models, where linear noise schedules have been widely adopted as stable defaults~\citep{nichol2021improved}. The deterministic switching at small timesteps ($t < 0.1$) further ensures that near-convergence states leverage the model's most confident predictions, minimizing stochastic perturbations when precision is critical.
+}
 
 \paragraph{Mixing Weight Functions}
 
