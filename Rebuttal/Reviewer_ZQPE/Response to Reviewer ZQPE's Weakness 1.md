@@ -26,7 +26,7 @@ We have strengthened the CVRP section in three ways:
 
 1. **Added state-of-the-art baseline:** We now include **HGS** [19], the leading CVRP heuristic, with reported optimal solutions for CVRP-20/50/100, and include missing runtime information.
 
-2. **Clarified positioning relative to large-scale CVRP solvers:** We discuss GLOP [21] and NeuroLKH [20], which scale to 1000–7000 customers using partition-based strategies. Our CVRP scope (20-100 customers) is positioned as proof-of-concept for architectural extensibility to constrained routing, not as competing with large-scale specialists. Notably, competing diffusion methods (DIFUSCO [1], T2T [2], Fast-T2T [3]) have no reported CVRP experiments, highlighting the difficulty of scaling single end-to-end diffusion models.
+2. **Clarified positioning relative to large-scale CVRP solvers:** We discuss GLOP [21] and NeuroLKH [20], which scale to 1000–7000 customers using partition-based strategies. Our CVRP scope (20-100 customers) is positioned as proof-of-concept for architectural extensibility to constrained routing, not as competing with large-scale specialists. Notably, competing diffusion methods (DIFUSCO [1], T2T [2], Fast-T2T [3]) have no reported CVRP experiments, highlighting the difficulty of scaling single end-to-end diffusion models. 
 
 3. **PO clarification:** After careful study, PO [14] is a training algorithm, not a solver architecture. It can be applied to POMO [11], Sym-NCO [12], AM [10] to improve training. Including it in our CVRP comparison would not be appropriate, as we are comparing solvers, not training methods.
 
