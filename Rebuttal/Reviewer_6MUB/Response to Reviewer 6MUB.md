@@ -18,7 +18,7 @@ We sincerely appreciate this important observation regarding hyperparameter sens
 
 We would like to clarify in three aspects:
 
-**1. Optimal settings found and robust:** While we documented sensitivity in **Appendix H.7** for transparency, we identified optimal settings (α = 0.1, τ = 0.1) that work robustly across all problem sizes (TSP-50/100/500/1000, CVRP-20/50/100, ESTP-10/20/50) without per-problem tuning.
+**1. Optimal settings found and robust:** While we documented sensitivity in **Appendix H.7** for transparency, we identified optimal settings (α = 0.1, τ = 10) that work robustly across all problem sizes (TSP-50/100/500/1000, CVRP-20/50/100, ESTP-10/20/50) without per-problem tuning.
 
 **2. Comparable to other deep learning methods:** Hyperparameter sensitivity is inherent to deep learning. Neural CO methods require tuning learning rates, network architectures, attention heads, embedding dimensions, etc. EDISCO's architectural stabilizers are analogous to batch normalization or layer normalization parameters in standard architectures. Although they are sensitive during initial design, they are stable once configured.
 
