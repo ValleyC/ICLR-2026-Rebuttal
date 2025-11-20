@@ -72,7 +72,7 @@ The novel contributions are as follows:
 
 \item The state-of-the-art performance is exceeded on TSP benchmarks (50-10000 cities). The optimality gap is reduced from 0.12\% to 0.08\% for TSP-500, from 0.30\% to 0.22\% for TSP-1000, and from 2.68\% to 1.20\% for TSP-10000. It only requires 33\% to 50\% of the training data compared to competing diffusion methods across all problem scales. 
 
-\item EDISCO is extended to solve real-world TSP problems and the Capacitated Vehicle Routing Problem (CVRP), outperforming SOTA approaches. These results validate the generalizability of EDISCO, indicating that it can be effectively applied to other GCOPs.
+\item \color{blue}EDISCO is extended to solve real-world TSP problems and is extended to other GCOPs, including the Capacitated Vehicle Routing Problem (CVRP) and Euclidean Steiner Tree Problem (ESTP). The results show that EDISCO outperforms SOTA approaches. These results validate the generalizability of EDISCO, indicating that it can be effectively applied to other GCOPs.
 \end{enumerate}
 
 The remainder of this paper is organized as follows. Section~\ref{sec:related} reviews related work on neural combinatorial optimization and diffusion models. Section~\ref{sec:method} presents the continuous-time diffusion framework and the EGNN architecture. Section~\ref{sec:experiments} presents comprehensive experimental results. Section~\ref{sec:discussion} concludes with discussions and future directions.
@@ -353,19 +353,19 @@ CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01m & 23.19 & 0.30\
 
 \subsection{Results}
 
-For all EDISCO results shown in this section, we use the PNDM solver~\citep{liu2022pndm} with 50 steps, which achieves the best solution quality based on our extensive evaluation in Appendix~\ref{subsec:solver_eval}. 
+\textcolor{blue}{This section aims to show the main results of TSP. The extension to ESTP and CVRP can be found in Appendix~\ref{app:steiner} and Appendix~\ref{app:cvrp}.} For all EDISCO results shown in this section, we use the PNDM solver~\citep{liu2022pndm} with 50 steps, which achieves the best solution quality based on our extensive evaluation in Appendix~\ref{subsec:solver_eval}. 
 
 \paragraph{TSP-50/100 Results}
 The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-optimal performance with 0.01\% gap on TSP-50 and 0.04\% on TSP-100, substantially outperforming DIFUSCO (0.48\% and 1.01\%), \textcolor{blue}{Fast-T2T (0.02\% and 0.07\%), BQ-NCO (-- and 0.35\%),} and T2T (0.04\% and 0.18\%). Unlike CADO, which requires both supervised and reinforcement learning, our purely supervised approach reaches comparable accuracy. \textcolor{blue}{For applications requiring ultra-fast inference, EDISCO with 5-step DEIS-2 solver achieves 0.02\% and 0.06\% gaps on TSP-50 and TSP-100, providing competitive quality with significantly reduced computation.} With 2-opt post-processing, EDISCO achieves optimal solutions (0.00\% gap) on TSP-50 and 0.01\% gap on TSP-100, matching the performance of \textcolor{blue}{Fast-T2T} and CADO while demonstrating that the equivariant architecture generates high-quality initial tours.
 
 \begin{wrapfigure}{l}{0.4\textwidth}
 \centering
-% \vspace{-0.5cm}
+\vspace{-0.8cm}
 \includegraphics[width=0.4\textwidth]{graphs/generalization.pdf}
 \vspace{-0.8cm}
 \caption{Generalization performance across TSP sizes under greedy decoding.}
 \label{fig:generalization}
-% \vspace{-0.2cm}
+\vspace{-0.8cm}
 \end{wrapfigure}
 
 \paragraph{TSP-500/1000 Results}
@@ -373,17 +373,17 @@ Table~\ref{tab:large_results} presents results on larger-scale TSP instances. ED
 
 \paragraph{Generalization} 
 
+We study the generalization ability of EDISCO by training models on each problem scale from \{TSP-50, TSP-100, TSP-500, TSP-1000\} and evaluating them across all scales with only the greedy decoder. Figure~\ref{fig:generalization} shows that EDISCO exhibits strong cross-size generalization, with models trained on TSP-1000 achieving gaps below 4.3\% on all other problem scales, and particularly impressive performance of 2.90\% on TSP-500. This generalizability outperforms other diffusion methods \citep{sun2023difusco, li2023t2t}.
+
 \begin{wrapfigure}{r}{0.5\textwidth}
 \centering
-\vspace{-0.5cm}
+% \vspace{-0.5cm}
 \includegraphics[width=0.5\textwidth]{graphs/data_experiments.pdf}
 \vspace{-0.8cm}
 \caption{Results on TSP-50 performance. Left: Optimality gap as a function of training set size. Right: Performance comparison when trained on optimal data versus heuristic Farthest Insertion data.}
 \label{fig:data_experiments}
 \vspace{-0.5cm}
 \end{wrapfigure}
-
-We study the generalization ability of EDISCO by training models on each problem scale from \{TSP-50, TSP-100, TSP-500, TSP-1000\} and evaluating them across all scales with only the greedy decoder. Figure~\ref{fig:generalization} shows that EDISCO exhibits strong cross-size generalization, with models trained on TSP-1000 achieving gaps below 4.3\% on all other problem scales, and particularly impressive performance of 2.90\% on TSP-500. This generalizability outperforms other diffusion methods \citep{sun2023difusco, li2023t2t}.
 
 \paragraph{Robustness to Training Data Variations}
 
@@ -443,7 +443,6 @@ The source code and instructions for reproducing our experiments are available a
 
 % ============ REFERENCE ============
 % Bibliography section
-\newpage
 \bibliography{iclr2026_conference}
 \bibliographystyle{iclr2026_conference}
 

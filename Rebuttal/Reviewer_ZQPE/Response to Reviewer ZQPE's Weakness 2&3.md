@@ -12,7 +12,7 @@ We have included **Fast-T2T** and **BQ-NCO** [8] as new baselines in our experim
 
 - **BQ-NCO:** Added to **Table 1** (TSP-100) and **Table 2** (TSP-500/1000), demonstrating its bisimulation quotienting approach.
 
-**EDISCO maintains state-of-the-art performance** across all benchmarks. Please see the revised manuscript for detailed numerical comparisons.
+**EDISCO achieves state-of-the-art performance** across all benchmarks. Please see the revised manuscript for detailed numerical comparisons.
 
 **2. Discussions Added:**
 
