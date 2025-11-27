@@ -71,8 +71,4 @@ Please see **Appendix H3: Cross-Distribution Generalization** (complete table an
 
 **2. ATSP Clarification:**
 
-As detailed in our **Response to Weakness 1 (Section 4)**, **EDISCO does not support ATSP** due to an **architectural limitation**: EDISCO's E(2)-equivariant EGNN fundamentally **requires Euclidean coordinates** to preserve geometric symmetries, which is incompatible with ATSP's coordinate-free **arbitrary asymmetric cost matrices**.
-
-We have also identified **promising future directions**: (1) replacing the encoder with ATSP-capable architectures (MatNet [5], GREAT [6]), or (2) learning coordinate embeddings from asymmetric cost matrices using Finsler Multi-Dimensional Scaling [7] or neural metric learning to enable approximate E(2)-equivariance for ATSP instances with near-geometric structure.
-
-Please see **Response to Weakness 1 (Section 4)** and **Appendix A: Scope and Limitations** for detailed discussion.
+This is detailed in our **Response to Weakness 1 (Section 4)**. We have also identified **promising future directions** in **Appendix A: Scope and Limitations** to: (1) replace the encoder with ATSP-capable architectures (MatNet [5], GREAT [6]), or (2) learn coordinate embeddings from asymmetric cost matrices using Finsler Multi-Dimensional Scaling [7] or neural metric learning to enable approximate E(2)-equivariance for ATSP instances with near-geometric structure.
