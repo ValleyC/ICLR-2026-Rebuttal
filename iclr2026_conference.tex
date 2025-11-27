@@ -20,6 +20,8 @@
 \usepackage{mathtools}
 \usepackage{amsthm}
 \usepackage{wrapfig}
+\usepackage{caption}
+\captionsetup{font=small}
 
 \newtheorem{proposition}{Proposition}
 \newtheorem{remark}{Remark}
@@ -247,7 +249,7 @@ The greedy construction algorithm maintains feasibility throughout the process. 
 
 \begin{table}[h]
 \centering
-\caption{Results on TSP-50 and TSP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy Decoding, 2O: 2-opt Post-processing. Concorde* represents the baseline for computing the gap. All results except CADO\textcolor{blue}{, Fast T2T, and BQ-NCO} are taken from~\citet{li2023t2t}. The results of CADO are taken from~\citet{yoon2024cado}. \textcolor{blue}{Fast T2T results are from~\citep{li2024fastt2t}. BQ-NCO results are from~\citep{drakulic2023bqnco}. EDISCO presents two solver configurations: 50-step PNDM for best quality and 5-step DEIS-2 for fast inference.}}
+\caption{Results on TSP-50 and TSP-100. RL: Reinforcement Learning, SL: Supervised Learning, G: Greedy Decoding, BS: Beam Search, 2O: 2-opt Post-processing. Concorde* represents the baseline for computing the gap. All results except CADO\textcolor{blue}{, Fast T2T, and BQ-NCO variants} are taken from~\citet{li2023t2t}. The results of CADO are taken from~\citet{yoon2024cado}. \textcolor{blue}{Fast T2T results are from~\citep{li2024fastt2t}. BQ-NCO results (BQ-perceiver, BQ-transformer, BQ-transformer bs16) are from~\citep{drakulic2023bqnco}. EDISCO presents two solver configurations: 50-step PNDM for best quality and 5-step DEIS-2 for fast inference.}}
 \label{tab:small_results}
 % \small
 \adjustbox{width=\textwidth}{%
@@ -269,7 +271,8 @@ Image Diffusion~\citep{graikos2022diffusion} & SL+G & 5.76 & 1.23 & 7.92 & 2.11 
 DIFUSCO~\citep{sun2023difusco} & SL+G & 5.72 & 0.48 & 7.84 & 1.01 \\
 T2T~\citep{li2023t2t} & SL+G & 5.69 & 0.04 & 7.77 & 0.18 \\
 \textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G} & \textcolor{blue}{5.69} & \textcolor{blue}{0.02} & \textcolor{blue}{7.76} & \textcolor{blue}{0.07} \\
-\textcolor{blue}{BQ-NCO~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{--} & \textcolor{blue}{--} & \textcolor{blue}{7.79} & \textcolor{blue}{0.35} \\
+\textcolor{blue}{BQ-perceiver~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{--} & \textcolor{blue}{--} & \textcolor{blue}{7.84} & \textcolor{blue}{0.97} \\
+\textcolor{blue}{BQ-transformer~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{--} & \textcolor{blue}{--} & \textcolor{blue}{7.79} & \textcolor{blue}{0.35} \\
 % DISCO~\citep{zhao2024disco} & SL+G & 5.70 & 0.16 & 7.80 & 0.58 \\
 CADO~\citep{yoon2024cado} & SL+RL+G & 5.69 & 0.01 & 7.77 & 0.08 \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{5.69} & \textbf{0.01} & \textbf{7.76} & \textbf{0.04} \\
@@ -283,8 +286,10 @@ Sym-NCO~\citep{kim2022symnco} & RL+G+2O & - & - & 7.82 & 0.76 \\
 DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 5.69 & 0.09 & 7.78 & 0.22 \\
 T2T~\citep{li2023t2t} & SL+G+2O & 5.69 & 0.02 & 7.76 & 0.06 \\
 \textcolor{blue}{Fast T2T (Ts=3,Tg=3)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G+2O} & \textcolor{blue}{5.69} & \textcolor{blue}{0.01} & \textcolor{blue}{7.76} & \textcolor{blue}{0.03} \\
+\textcolor{blue}{BQ-transformer (bs16)~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+BS} & \textcolor{blue}{--} & \textcolor{blue}{--} & \textcolor{blue}{7.76} & \textcolor{blue}{0.01} \\
 CADO~\citep{yoon2024cado} & SL+RL+G+2O & 5.69 & 0.00 & 7.76 & 0.01 \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{5.69} & \textbf{0.00} & \textbf{7.76} & \textbf{0.01} \\
+\textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+G+2O} & \textcolor{blue}{\textbf{5.69}} & \textcolor{blue}{\textbf{0.01}} & \textcolor{blue}{\textbf{7.76}} & \textcolor{blue}{\textbf{0.02}} \\
 \bottomrule
 \end{tabular}%
 }
@@ -292,7 +297,7 @@ CADO~\citep{yoon2024cado} & SL+RL+G+2O & 5.69 & 0.00 & 7.76 & 0.01 \\
 
 \begin{table}[h]
 \centering
-\caption{Results on TSP-500 and TSP-1000. RL: Reinforcement Learning, SL: Supervised Learning, AS: Active Search, G: Greedy, S: Sampling, BS: Beam Search, 2O: 2-opt. Concorde* represents the baseline for computing the gap. All results except CADO\textcolor{blue}{, Fast T2T, BQ-NCO,} and EDISCO are taken from~\citet{li2023t2t}. CADO results are from~\citet{yoon2024cado}. \textcolor{blue}{Fast T2T results are from~\citep{li2024fastt2t}. BQ-NCO results are from~\citep{drakulic2023bqnco}. EDISCO presents two solver configurations: 50-step PNDM (best quality) and 5-step DEIS-2 (9× faster, competitive quality).}}
+\caption{Results on TSP-500 and TSP-1000. RL: Reinforcement Learning, SL: Supervised Learning, AS: Active Search, G: Greedy, S: Sampling, BS: Beam Search, 2O: 2-opt. Concorde* represents the baseline for computing the gap. All results except CADO\textcolor{blue}{, Fast T2T, BQ-NCO variants,} and EDISCO are taken from~\citet{li2023t2t}. CADO results are from~\citet{yoon2024cado}. \textcolor{blue}{Fast T2T results are from~\citep{li2024fastt2t}. BQ-NCO results (BQ-perceiver, BQ-transformer, BQ-transformer bs16) are from~\citep{drakulic2023bqnco}. EDISCO presents two solver configurations: 50-step PNDM (best quality) and 5-step DEIS-2 (9× faster, competitive quality).}}
 \label{tab:large_results}
 \adjustbox{width=\textwidth}{%
 \begin{tabular}{llccccccc}
@@ -315,7 +320,7 @@ DIMES~\citep{qiu2022dimes} & RL+AS+G & 17.81 & 7.61\% & 2.10 h & 24.91 & 7.74\% 
 DIFUSCO~\citep{sun2023difusco} & SL+G & 18.11 & 9.41\% & 5.70 m & 25.72 & 11.24\% & 17.33 m \\
 T2T~\citep{li2023t2t} & SL+G & 17.39 & 5.09\% & 4.90 m & 25.17 & 8.87\% & 15.66 m \\
 \textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G} & \textcolor{blue}{17.53} & \textcolor{blue}{5.94\%} & \textcolor{blue}{0.37 m} & \textcolor{blue}{24.57} & \textcolor{blue}{6.29\%} & \textcolor{blue}{1.35 m} \\
-\textcolor{blue}{BQ-NCO~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{16.75} & \textcolor{blue}{1.18\%} & \textcolor{blue}{2.00 m} & \textcolor{blue}{23.65} & \textcolor{blue}{2.29\%} & \textcolor{blue}{6.84 m} \\
+\textcolor{blue}{BQ-perceiver~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{17.41} & \textcolor{blue}{5.22\%} & \textcolor{blue}{0.13 m} & \textcolor{blue}{25.19} & \textcolor{blue}{8.97\%} & \textcolor{blue}{0.37 m} \\
 CADO~\citep{yoon2024cado} & SL+RL+G & 16.93 & 2.30\% & 8.23 m & 23.89 & 3.33\% & 18.42 m \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{16.87} & \textbf{1.95\%} & 2.19 m & \textbf{23.78} & \textbf{2.85\%} & 6.84 m \\
 \textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+G} & \textcolor{blue}{\textbf{17.01}} & \textcolor{blue}{\textbf{2.78\%}} & \textcolor{blue}{\textbf{0.23 m}} & \textcolor{blue}{\textbf{24.83}} & \textcolor{blue}{\textbf{4.42\%}} & \textcolor{blue}{\textbf{0.75 m}} \\
@@ -325,8 +330,10 @@ DIMES~\citep{qiu2022dimes} & RL+AS+G+2O & 17.31 & 4.57\% & 2.10 h & 24.33 & 5.22
 DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 16.81 & 1.55\% & 5.75 m & 23.55 & 1.86\% & 17.52 m \\
 T2T~\citep{li2023t2t} & SL+G+2O & 16.68 & 0.78\% & 4.98 m & 23.41 & 1.25\% & 15.90 m \\
 \textcolor{blue}{Fast T2T (Ts=5,Tg=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G+2O} & \textcolor{blue}{16.61} & \textcolor{blue}{0.39\%} & \textcolor{blue}{2.17 m} & \textcolor{blue}{23.25} & \textcolor{blue}{0.58\%} & \textcolor{blue}{8.62 m} \\
+\textcolor{blue}{BQ-transformer~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{16.75} & \textcolor{blue}{1.18\%} & \textcolor{blue}{0.25 m} & \textcolor{blue}{23.65} & \textcolor{blue}{2.29\%} & \textcolor{blue}{0.50 m} \\
 CADO~\citep{yoon2024cado} & SL+RL+G+2O & 16.59 & 0.24\% & 8.35 m & 23.28 & 0.69\% & 18.67 m \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{16.58} & \textbf{0.18\%} & 2.35 m & \textbf{23.24} & \textbf{0.52\%} & 6.97 m \\
+\textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+G+2O} & \textcolor{blue}{\textbf{16.59}} & \textcolor{blue}{\textbf{0.26\%}} & \textcolor{blue}{\textbf{0.40 m}} & \textcolor{blue}{\textbf{23.31}} & \textcolor{blue}{\textbf{0.82\%}} & \textcolor{blue}{\textbf{0.90 m}} \\
 \midrule
 EAN~\citep{deudon2018learning} & RL+S+2O & 23.75 & 43.57\% & 57.76 m & 47.73 & 106.46\% & 5.39 h \\
 AM~\citep{kool2019attention} & RL+BS & 19.53 & 18.03\% & 21.99 m & 29.90 & 29.23\% & 1.64 h \\
@@ -338,14 +345,17 @@ T2T~\citep{li2023t2t} & SL+S & 17.02 & 2.84\% & 15.98 m & 24.72 & 6.92\% & 53.92
 \textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+S} & \textcolor{blue}{17.02} & \textcolor{blue}{2.85\%} & \textcolor{blue}{1.12 m} & \textcolor{blue}{24.07} & \textcolor{blue}{4.10\%} & \textcolor{blue}{4.65 m} \\
 CADO~\citep{yoon2024cado} & SL+RL+S & 16.76 & 1.27\% & 26.89 m & 23.67 & 2.38\% & 61.23 m \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{16.72} & \textbf{1.05\%} & 7.82 m & \textbf{23.57} & \textbf{1.95\%} & 23.27 m \\
+\textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+S} & \textcolor{blue}{\textbf{16.80}} & \textcolor{blue}{\textbf{1.50\%}} & \textcolor{blue}{\textbf{0.85 m}} & \textcolor{blue}{\textbf{23.82}} & \textcolor{blue}{\textbf{3.02\%}} & \textcolor{blue}{\textbf{2.58 m}} \\
 \midrule
 DIMES~\citep{qiu2022dimes} & RL+S+2O & 17.64 & 6.56\% & 1.10 m & 24.81 & 7.29\% & 2.86 m \\
 DIMES~\citep{qiu2022dimes} & RL+AS+S+2O & 17.29 & 4.48\% & 2.11 h & 24.32 & 5.17\% & 4.53 h \\
 DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 16.69 & 0.83\% & 19.05 m & 23.42 & 1.30\% & 59.53 m \\
 T2T~\citep{li2023t2t} & SL+S+2O & 16.61 & 0.37\% & 16.03 m & 23.30 & 0.78\% & 54.67 m \\
 \textcolor{blue}{Fast T2T (Ts=5,Tg=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+S+2O} & \textcolor{blue}{16.58} & \textcolor{blue}{0.21\%} & \textcolor{blue}{6.85 m} & \textcolor{blue}{23.22} & \textcolor{blue}{0.42\%} & \textcolor{blue}{18.28 m} \\
+\textcolor{blue}{BQ-transformer (bs16)~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+S+2O} & \textcolor{blue}{16.57} & \textcolor{blue}{0.15\%} & \textcolor{blue}{18.00 m} & \textcolor{blue}{23.20} & \textcolor{blue}{0.35\%} & \textcolor{blue}{42.00 m} \\
 CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01 m & 23.19 & 0.30\% & 61.48 m \\
 \textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{16.56} & \textbf{0.08\%} & 8.03 m & \textbf{23.17} & \textbf{0.22\%} & 23.48 m \\
+\textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+S+2O} & \textcolor{blue}{\textbf{16.57}} & \textcolor{blue}{\textbf{0.12\%}} & \textcolor{blue}{\textbf{1.00 m}} & \textcolor{blue}{\textbf{23.20}} & \textcolor{blue}{\textbf{0.35\%}} & \textcolor{blue}{\textbf{2.80 m}} \\
 \bottomrule
 \end{tabular}%
 }
@@ -356,7 +366,7 @@ CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01 m & 23.19 & 0.30
 \textcolor{blue}{This section aims to show the main results of TSP. The extension to ESTP and CVRP can be found in Appendix~\ref{app:steiner} and Appendix~\ref{app:cvrp}.} For all EDISCO results shown in this section, we use the PNDM solver~\citep{liu2022pndm} with 50 steps, which achieves the best solution quality based on our extensive evaluation in Appendix~\ref{subsec:solver_eval}. 
 
 \paragraph{TSP-50/100 Results}
-The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-optimal performance with 0.01\% gap on TSP-50 and 0.04\% on TSP-100, substantially outperforming DIFUSCO (0.48\% and 1.01\%), \textcolor{blue}{Fast-T2T (0.02\% and 0.07\%), BQ-NCO (-- and 0.35\%),} and T2T (0.04\% and 0.18\%). Unlike CADO, which requires both supervised and reinforcement learning, our purely supervised approach reaches comparable accuracy. \textcolor{blue}{For applications requiring ultra-fast inference, EDISCO with a 5-step DEIS-2 solver achieves 0.02\% and 0.06\% gaps on TSP-50 and TSP-100, respectively, showing competitive performance with significantly reduced computation.} With 2-opt post-processing, EDISCO achieves optimal solutions (0.00\% gap) on TSP-50 and 0.01\% gap on TSP-100, matching the performance of \textcolor{blue}{Fast-T2T} and CADO while demonstrating that the equivariant architecture generates high-quality initial tours.
+The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-optimal performance with 0.01\% gap on TSP-50 and 0.04\% on TSP-100, substantially outperforming DIFUSCO (0.48\% and 1.01\%), \textcolor{blue}{Fast-T2T (0.02\% and 0.07\%), BQ-transformer (-- and 0.35\%),} and T2T (0.04\% and 0.18\%). Unlike CADO, which requires both supervised and reinforcement learning, our purely supervised approach reaches comparable accuracy. \textcolor{blue}{For applications requiring ultra-fast inference, EDISCO with a 5-step DEIS-2 solver achieves 0.02\% and 0.06\% gaps on TSP-50 and TSP-100, respectively, showing competitive performance with significantly reduced computation.} With 2-opt post-processing, EDISCO achieves optimal solutions (0.00\% gap) on TSP-50 and 0.01\% gap on TSP-100, matching the performance of \textcolor{blue}{Fast-T2T} and CADO while demonstrating that the equivariant architecture generates high-quality initial tours.
 
 \begin{wrapfigure}{l}{0.4\textwidth}
 \centering
@@ -365,11 +375,11 @@ The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-opt
 \vspace{-0.8cm}
 \caption{Generalization performance across TSP sizes under greedy decoding.}
 \label{fig:generalization}
-\vspace{-0.8cm}
+\vspace{-0.5cm}
 \end{wrapfigure}
 
 \paragraph{TSP-500/1000 Results}
-Table~\ref{tab:large_results} presents results on larger-scale TSP instances. EDISCO achieves state-of-the-art performance across all decoding strategies. Using greedy decoding, EDISCO achieves gaps of 1.95\% and 2.85\% on TSP-500 and TSP-1000, outperforming DIFUSCO (9.41\%, 11.24\%), \textcolor{blue}{Fast-T2T (5.94\%, 6.29\%), BQ-NCO (1.18\%, 2.29\%),} and T2T (5.09\%, 8.87\%). \textcolor{blue}{BQ-NCO, which uses an MDP formulation with imitation learning, achieves competitive generalization but is still outperformed by EDISCO's diffusion-based approach.} \textcolor{blue}{The continuous-time formulation enables flexible speed-quality trade-offs: EDISCO with a 5-step DEIS-2 solver achieves 2.78\% and 4.42\% gaps in only 0.23 minutes and 0.75 minutes, approximately 9.5× and 9.1× faster than PNDM-50 while maintaining competitive quality, making it ideal for time-critical applications.} With 2-opt post-processing, EDISCO achieves near-optimal solutions with gaps of 0.18\% and 0.52\%, outperforming \textcolor{blue}{Fast-T2T (0.39\%, 0.58\%)} and the previous best CADO (0.24\%, 0.69\%) while being 3.6× faster on TSP-500 and 2.7× faster on TSP-1000. The efficiency gain is particularly notable in sampling mode, where EDISCO requires only 7.82m and 23.27m compared to DIFUSCO's 19.02m and 59.18m, demonstrating that the use of advanced numerical solvers significantly accelerates inference without compromising solution quality.
+Table~\ref{tab:large_results} presents results on larger-scale TSP instances. EDISCO achieves state-of-the-art performance across all decoding strategies. Using greedy decoding, EDISCO achieves gaps of 1.95\% and 2.85\% on TSP-500 and TSP-1000, outperforming DIFUSCO (9.41\%, 11.24\%), \textcolor{blue}{Fast-T2T (5.94\%, 6.29\%), BQ-transformer (1.18\%, 2.29\%),} and T2T (5.09\%, 8.87\%). \textcolor{blue}{BQ-NCO, which uses an MDP formulation with imitation learning, achieves competitive generalization but is still outperformed by EDISCO's diffusion-based approach.} \textcolor{blue}{The continuous-time formulation enables flexible speed-quality trade-offs: EDISCO with a 5-step DEIS-2 solver achieves 2.78\% and 4.42\% gaps in only 0.23 minutes and 0.75 minutes, approximately 9.5× and 9.1× faster than PNDM-50 while maintaining competitive quality, making it ideal for time-critical applications.} With 2-opt post-processing, EDISCO achieves near-optimal solutions with gaps of 0.18\% and 0.52\%, outperforming \textcolor{blue}{Fast-T2T (0.39\%, 0.58\%)} and the previous best CADO (0.24\%, 0.69\%) while being 3.6× faster on TSP-500 and 2.7× faster on TSP-1000. The efficiency gain is particularly notable in sampling mode, where EDISCO requires only 7.82m and 23.27m compared to DIFUSCO's 19.02m and 59.18m, demonstrating that the use of advanced numerical solvers significantly accelerates inference without compromising solution quality.
 
 \paragraph{Generalization} 
 

@@ -19,7 +19,7 @@ We have included **Fast-T2T** and **BQ-NCO** [8] as new baselines in our experim
 | DIFUSCO | 9.41% | 11.24% |
 | T2T | 5.09% | 8.87% |
 | Fast-T2T | 5.94% | 6.29% |
-| BQ-NCO | 1.18% | 2.29% |
+| BQ-NCO | 5.22% | 8.97% |
 | **EDISCO (Ours)** | **1.95%** | **2.85%** |
 
 Please see the revised manuscript for detailed numerical comparisons.
