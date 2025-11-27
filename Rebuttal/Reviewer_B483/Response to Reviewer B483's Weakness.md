@@ -3,7 +3,17 @@
 ## **Response to Weakness 1: Limited Problem Scope**
 We are grateful for the comments, and with all due respect, we would like to clarify around the concern raised by point (a).
 
-**(a)** The originally submitted manuscript already included and considered other geometric problems. **In the original submission,** Appendix A (**Appendix C in the revised manuscript**) already included comprehensive CVRP evaluation for CVRP-20/50/100 with demand constraints and capacity limits. For more extensive evaluations, we have now added **Appendix B** to the revised manuscript, containing experiments on the **Euclidean Steiner Tree Problem (ESTP)**. EDISCO substantially outperforms classical heuristics (GeoSteiner [1]) and learning-based baselines (DIFUSCO [2], T2T [3], Deep-Steiner [4]) across Steiner-10/20/50. We have now also added a sentence in the **start of Section 4.2** to clearly redirect readers to our ESTP and CVRP results in the Appendices.
+**(a)** The originally submitted manuscript already included and considered other geometric problems. **In the original submission,** Appendix A (**Appendix C in the revised manuscript**) already included comprehensive CVRP evaluation for CVRP-20/50/100 with demand constraints and capacity limits. For more extensive evaluations, we have now added **Appendix B** to the revised manuscript, containing experiments on the **Euclidean Steiner Tree Problem (ESTP)**. EDISCO substantially outperforms classical heuristics (GeoSteiner [1]) and learning-based baselines (DIFUSCO [2], T2T [3], Deep-Steiner [4]) across Steiner-10/20/50:
+
+| Method | Steiner-10 Gap | Steiner-20 Gap | Steiner-50 Gap |
+|--------|----------------|----------------|----------------|
+| GeoSteiner* (Exact) | 0.00% | 0.00% | 0.00% |
+| DIFUSCO | 5.73% | 4.96% | 4.67% |
+| T2T | 4.20% | 3.58% | 3.29% |
+| Deep-Steiner | 4.20% | 4.96% | 5.19% |
+| **EDISCO (Ours)** | **1.53%** | **1.38%** | **1.56%** |
+
+We have now also added a sentence in the **start of Section 4.2** to clearly redirect readers to our ESTP and CVRP results in the Appendices.
 
 **(b)** Thank you for this insightful comment. This could be one of the limitations of our method. However, E(2)-equivariance fundamentally requires Euclidean coordinates to preserve geometric symmetries. This is an architectural choice, and we believe that this might not be a weakness. We have added **Appendix A: Scope and Limitations**, which clarifies that EDISCO is specialized for solving Euclidean geometric problems. Extending to Manhattan distance or road networks, or even asymmetric TSP (ATSP), would require different architectural approaches, which we have actively explored as a promising future direction in **Appendix A: Scope and Limitations**.
 

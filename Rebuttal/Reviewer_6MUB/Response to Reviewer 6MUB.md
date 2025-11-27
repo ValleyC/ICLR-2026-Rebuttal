@@ -42,7 +42,17 @@ We have included **Fast-T2T** [1] and **BQ-NCO** [2] as new baselines in our exp
 
 - **BQ-NCO**: Added to **Table 1** (TSP-100) and **Table 2** (TSP-500/1000), demonstrating its bisimulation quotienting approach for generalization.
 
-**EDISCO maintains state-of-the-art performance** across all benchmarks, demonstrating the effectiveness of combining E(2)-equivariance with continuous-time diffusion.
+**EDISCO maintains state-of-the-art performance** across all benchmarks:
+
+| Method | TSP-500 Gap | TSP-1000 Gap |
+|--------|-------------|--------------|
+| DIFUSCO | 9.41% | 11.24% |
+| T2T | 5.09% | 8.87% |
+| Fast-T2T | 5.94% | 6.29% |
+| BQ-NCO | 1.18% | 2.29% |
+| **EDISCO (Ours)** | **1.95%** | **2.85%** |
+
+This demonstrates the effectiveness of combining E(2)-equivariance with continuous-time diffusion.
 
 **Related Work Expanded:**
 

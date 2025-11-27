@@ -23,7 +23,20 @@ We acknowledge that using instance-aware strategies is a good idea. However, suc
 
 We sincerely appreciate this suggestion. To directly address this question, we have added a comprehensive ablation study in the revised manuscript (**Table 3**) that systematically removes combinations of EDISCO's three key components. In addition to our previous ablation study, which removed one component at a time, we now added **three more combinations** that keep only **one component at a time**: **(EGNN only, continuous-time diffusion only, and adaptive mixing strategy only)**. We have also chosen the **vanilla DIFUSCO** as the equivalent baseline. 
 
-This design enables us to construct "DIFUSCO + EGNN" (the **EGNN Only** setting in **Table 3**) and isolate the architectural contribution of E(2)-equivariance. "DIFUSCO + EGNN" achieves 3.58% & 5.06% gaps on TSP-500/1000, demonstrating **2.63x & 2.22x** improvements over vanilla DIFUSCO (9.41% & 11.24%). This isolates the architectural contribution of E(2)-equivariance.
+This design enables us to construct "DIFUSCO + EGNN" (the **EGNN Only** setting in **Table 3**) and isolate the architectural contribution of E(2)-equivariance:
+
+| Model Variant | TSP-500 Gap | TSP-1000 Gap |
+|---------------|-------------|--------------|
+| **EDISCO (Full)** | **1.95%** | **2.85%** |
+| w/o Mix Strategy | 2.44% | 3.41% |
+| w/o Continuous-Time | 2.86% | 4.28% |
+| w/o EGNN | 5.71% | 7.49% |
+| EGNN Only | 3.58% | 5.06% |
+| Continuous Only | 7.09% | 9.27% |
+| Mix Only | 6.42% | 8.52% |
+| Vanilla DIFUSCO | 9.41% | 11.24% |
+
+"DIFUSCO + EGNN" achieves 3.58% & 5.06% gaps on TSP-500/1000, demonstrating **2.63× & 2.22×** improvements over vanilla DIFUSCO (9.41% & 11.24%). This isolates the architectural contribution of E(2)-equivariance.
 
 ---
 

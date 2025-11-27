@@ -6,7 +6,19 @@
 
 We now include extensive experiments on the **Euclidean Steiner Tree Problem (ESTP)**, demonstrating that EDISCO applies beyond routing to *node-selection* geometric optimization. Unlike TSP, ESTP requires deciding which candidate Steiner points to include to minimize tree length.
 
-EDISCO substantially outperforms both classical heuristics and learning-based baselines (DIFUSCO, T2T, Fast-T2T) across all problem sizes (Steiner-10/20/50). Please see **Appendix B** (Table 4).
+EDISCO substantially outperforms both classical heuristics and learning-based baselines (DIFUSCO, T2T, Fast-T2T) across all problem sizes (Steiner-10/20/50):
+
+| Method | Steiner-10 Gap | Steiner-20 Gap | Steiner-50 Gap |
+|--------|----------------|----------------|----------------|
+| GeoSteiner* (Exact) | 0.00% | 0.00% | 0.00% |
+| Steiner Insertion | 3.44% | 3.58% | 3.29% |
+| Deep-Steiner | 4.20% | 4.96% | 5.19% |
+| DIFUSCO | 5.73% | 4.96% | 4.67% |
+| T2T | 4.20% | 3.58% | 3.29% |
+| Fast-T2T | 2.29% | 2.20% | 2.25% |
+| **EDISCO (Ours)** | **1.53%** | **1.38%** | **1.56%** |
+
+Please see **Appendix B** (Table 4).
 
 ---
 
@@ -24,7 +36,14 @@ Please see **Appendix A: Scope and Limitations**.
 
 We have strengthened the CVRP section in **Appendix C** of the revised manuscript in three ways:
 
-1. **Added state-of-the-art baseline:** We now include **HGS** [1], the leading CVRP heuristic, with reported optimal solutions for CVRP-20/50/100, and include missing runtime information.
+1. **Added state-of-the-art baseline:** We now include **HGS** [1], the leading CVRP heuristic, with reported optimal solutions for CVRP-20/50/100, and include missing runtime information:
+
+| Method | CVRP-20 Gap | CVRP-50 Gap | CVRP-100 Gap |
+|--------|-------------|-------------|--------------|
+| HGS (Heuristic) | 0.00% | 0.00% | 0.00% |
+| AM | 4.97% | 5.86% | 7.34% |
+| POMO | 3.72% | 3.52% | 3.09% |
+| **EDISCO (Ours)** | **1.41%** | **2.46%** | **3.17%** |
 
 2. **Clarified positioning relative to large-scale CVRP solvers:** We discuss GLOP [2] and NeuroLKH [3], which scale to 1000–7000 customers using partition-based strategies. Our CVRP scope (20-100 customers) is positioned as proof-of-concept for architectural extensibility to constrained routing, not as competing with large-scale specialists. Notably, competing diffusion methods (DIFUSCO, T2T, Fast-T2T) have no reported CVRP experiments, highlighting the difficulty of scaling single end-to-end diffusion models. We have actively discussed future directions in **Appendix A** in the revised manuscript for applying the E(2) Equivariance to partition-based strategies similar to GLOP [2] to scale to large-scale instances (1000+ customers).
 

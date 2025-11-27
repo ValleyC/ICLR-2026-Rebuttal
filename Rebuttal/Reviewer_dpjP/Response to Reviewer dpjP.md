@@ -3,14 +3,31 @@
 ---
 
 ## **Response to Weakness 1:**
-We sincerely appreciate this important observation. We have included extensive **out-of-distribution (OOD) experiments** in **Appendix H3**, following the evaluation protocol established by GLOP [1]: the **Uniform (training baseline)**, **Cluster**, **Explosion**, and **Implosion** are evaluated on TSP-100. EDISCO achieves the lowest average performance drop across all distributions.
+We sincerely appreciate this important observation. We have included extensive **out-of-distribution (OOD) experiments** in **Appendix H3**, following the evaluation protocol established by GLOP [1]: the **Uniform (training baseline)**, **Cluster**, **Explosion**, and **Implosion** are evaluated on TSP-100. EDISCO achieves the lowest average performance drop across all distributions:
+
+| Method | Uniform | Cluster | Explosion | Implosion | Avg Gap | Avg Det. |
+|--------|---------|---------|-----------|-----------|---------|----------|
+| DIFUSCO | 1.01% | 2.87% | 1.38% | 2.80% | 2.02% | 132.7% |
+| T2T | 0.18% | 1.50% | 0.15% | 2.60% | 1.11% | 687.0% |
+| Fast-T2T | 0.06% | 1.18% | 0.03% | 2.50% | 0.94% | 1960.6% |
+| GLOP | 0.09% | 0.17% | 0.07% | 0.08% | 0.10% | 15.0% |
+| **EDISCO** | **0.04%** | **0.05%** | **0.03%** | **0.05%** | **0.04%** | **4.2%** |
 
 Regarding CVRPLIB, our CVRP scope (20-100 customers) is positioned as a proof-of-concept for architectural extensibility to constrained routing, but not competing with large-scale specialists. Notably, competing diffusion methods (DIFUSCO [2], T2T [3], Fast-T2T [4]) have no reported CVRP experiments, highlighting the difficulty of scaling single end-to-end diffusion models. We have actively discussed future directions in **Appendix A** in the revised manuscript for applying the E(2) Equivariance to partition-based strategies similar to GLOP [1] to scale to large-scale instances (1000+ customers).
 
 ---
 
 ## **Response to Weakness 2:**
-We sincerely thank the reviewer for this comment. We have now revised the CVRP experiments in **Appendix C** of the revised manuscript. We have included **HGS** [5], the leading CVRP heuristic, with reported optimal solutions and complete runtime information for CVRP-20/50/100. We acknowledge that HGS achieves superior solution quality compared to neural methods. However, HGS requires substantially longer computation time (often hours for medium-sized instances), and is typically used in the neural CVRP literature as a ground truth or reference solution rather than a competing real-time solver (such as PO [6]).
+We sincerely thank the reviewer for this comment. We have now revised the CVRP experiments in **Appendix C** of the revised manuscript. We have included **HGS** [5], the leading CVRP heuristic, with reported optimal solutions and complete runtime information for CVRP-20/50/100:
+
+| Method | Type | CVRP-20 Gap | CVRP-50 Gap | CVRP-100 Gap |
+|--------|------|-------------|-------------|--------------|
+| HGS | Heuristic | 0.00% (1h) | 0.00% (3h) | 0.00% (5h) |
+| AM | RL+G | 4.97% | 5.86% | 7.34% |
+| POMO | RL+G | 3.72% | 3.52% | 3.09% |
+| **EDISCO** | **SL+G** | **1.41%** | **2.46%** | **3.17%** |
+
+We acknowledge that HGS achieves superior solution quality compared to neural methods. However, HGS requires substantially longer computation time (often hours for medium-sized instances), and is typically used in the neural CVRP literature as a ground truth or reference solution rather than a competing real-time solver (such as PO [6]).
 
 ---
 

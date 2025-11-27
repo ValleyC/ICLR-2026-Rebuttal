@@ -12,7 +12,17 @@ We have included **Fast-T2T** and **BQ-NCO** [8] as new baselines in our experim
 
 - **BQ-NCO:** Added to **Table 1** (TSP-100) and **Table 2** (TSP-500/1000), demonstrating its bisimulation quotienting approach.
 
-**EDISCO achieves state-of-the-art performance** across all benchmarks. Please see the revised manuscript for detailed numerical comparisons.
+**EDISCO achieves state-of-the-art performance** across all benchmarks:
+
+| Method | TSP-500 Gap | TSP-1000 Gap |
+|--------|-------------|--------------|
+| DIFUSCO | 9.41% | 11.24% |
+| T2T | 5.09% | 8.87% |
+| Fast-T2T | 5.94% | 6.29% |
+| BQ-NCO | 1.18% | 2.29% |
+| **EDISCO (Ours)** | **1.95%** | **2.85%** |
+
+Please see the revised manuscript for detailed numerical comparisons.
 
 **2. Discussions Added:**
 
@@ -47,7 +57,17 @@ We sincerely appreciate the reviewer for these valuable suggestions.
 
 **1. Cross-Distribution Evaluation Added:**
 
-We have included extensive **out-of-distribution (OOD) experiments** following the evaluation protocol established by GLOP [2]: the **Uniform (training baseline)**, **Cluster**, **Explosion**, and **Implosion** are evaluated on TSP-100. EDISCO achieves the lowest average performance drop across all distributions. Please see **Appendix H3: Cross-Distribution Generalization** (complete table and analysis).
+We have included extensive **out-of-distribution (OOD) experiments** following the evaluation protocol established by GLOP [2]: the **Uniform (training baseline)**, **Cluster**, **Explosion**, and **Implosion** are evaluated on TSP-100. EDISCO achieves the lowest average performance drop across all distributions:
+
+| Method | Uniform | Cluster | Explosion | Implosion | Avg Gap | Avg Det. |
+|--------|---------|---------|-----------|-----------|---------|----------|
+| DIFUSCO | 1.01% | 2.87% | 1.38% | 2.80% | 2.02% | 132.7% |
+| T2T | 0.18% | 1.50% | 0.15% | 2.60% | 1.11% | 687.0% |
+| Fast-T2T | 0.06% | 1.18% | 0.03% | 2.50% | 0.94% | 1960.6% |
+| GLOP | 0.09% | 0.17% | 0.07% | 0.08% | 0.10% | 15.0% |
+| **EDISCO** | **0.04%** | **0.05%** | **0.03%** | **0.05%** | **0.04%** | **4.2%** |
+
+Please see **Appendix H3: Cross-Distribution Generalization** (complete table and analysis).
 
 **2. ATSP Clarification:**
 
