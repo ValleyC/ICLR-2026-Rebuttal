@@ -50,7 +50,7 @@
 \maketitle
 
 \begin{abstract}
-Geometric combinatorial optimization problems, such as the Traveling Salesman Problem (TSP), possess inherent symmetries under rotations, translations, and reflections in Euclidean space. These transformations are denoted as E(2). However, existing neural network-based approaches, including recent diffusion-based solvers, fail to exploit these geometric features. This paper presents EDISCO, to the best of our knowledge, the first diffusion-based framework combining E(2)-equivariant graph neural networks with continuous-time categorical diffusion models for solving geometric combinatorial problems. This approach introduces an equivariant score network that respects geometric transformations while operating on discrete edge variables, together with a continuous-time categorical diffusion process that maintains E(2) symmetries throughout the forward and reverse processes. By incorporating geometric awareness directly into the diffusion process, EDISCO achieves notable improvements over the baseline. EDISCO reduces the state-of-the-art TSP optimality gaps on TSP-500 from 0.12\% to 0.08\%, TSP-1000 from 0.30\% to 0.22\%, and TSP-10000 from 2.68\% to 1.20\%. EDISCO demonstrates strong generalizability across problem sizes and also shows remarkable efficiency, requiring only 33\% to 50\% of the training data compared to competing diffusion methods across all problem scales.
+Geometric combinatorial optimization problems, such as the Traveling Salesman Problem (TSP), possess inherent symmetries under rotations, translations, and reflections in Euclidean space. These transformations are denoted as E(2). However, existing neural network-based approaches, including recent diffusion-based solvers, fail to exploit these geometric features. This paper presents EDISCO, to the best of our knowledge, the first diffusion-based framework combining E(2)-equivariant graph neural networks with continuous-time categorical diffusion models for solving geometric combinatorial problems. This approach introduces an equivariant score network that respects geometric transformations while operating on discrete edge variables, together with a continuous-time categorical diffusion process that maintains E(2) symmetries throughout the forward and reverse processes. By incorporating geometric awareness directly into the diffusion process, EDISCO achieves notable improvements over the baseline. It reduces the state-of-the-art TSP optimality gaps on TSP-500 from 0.12\% to 0.08\%, TSP-1000 from 0.30\% to 0.22\%, and TSP-10000 from 2.68\% to 1.20\%. EDISCO demonstrates strong generalizability across problem sizes and also shows remarkable efficiency, requiring only 33\% to 50\% of the training data compared to competing diffusion methods across all problem scales.
 \end{abstract}
 
 \section{Introduction}
@@ -85,7 +85,7 @@ The remainder of this paper is organized as follows. Section~\ref{sec:related} r
 \subsection{Neural Network-Based TSP Solvers}
 Neural network-based approaches for TSP have recently become mainstream due to their potential for rapid inference, generalization across problem instances, and ability to learn from data without hand-crafted heuristics~\citep{kool2019attention,joshi2022learning,fu2021generalize}. These approaches can be divided into autoregressive and non-autoregressive models. Autoregressive models~\citep{kool2019attention,kwon2020pomo} construct solutions sequentially but require extensive training data and struggle with generalization~\citep{joshi2022learning}. Non-autoregressive approaches generate complete solutions simultaneously, evolving from limited heatmap representations~\citep{joshi2019efficient} to expressive diffusion models~\citep{sun2023difusco,li2023t2t,yoon2024cado,zhao2024disco}.
 
-Among diffusion approaches, DIFUSCO~\citep{sun2023difusco} pioneered graph-based diffusion for TSP, DISCO~\citep{zhao2024disco} achieved 5.28× speedup through residue-constrained generation, and T2T~\citep{li2023t2t} improved quality via gradient-based search. \textcolor{blue}{Fast-T2T~\citep{li2024fastt2t} accelerates diffusion-based solving through optimization consistency between training and testing, achieving substantial speedups with competitive solution quality.} CADO~\citep{yoon2024cado} combines enhanced DIFUSCO by combining RL fine-tuning, but requires high-quality supervised data and expensive RL fine-tuning. \textcolor{blue}{Recent work explores alternative paradigms: COExpander~\citep{ma2025coexpander} introduces adaptive expansion that interpolates between global prediction and local construction, achieving strong performance on TSP and ATSP up to 10K nodes; BQ-NCO~\citep{drakulic2023bqnco} reformulates the problem as an MDP with bisimulation quotienting for improved generalization; and UTSP~\citep{min2023utsp} demonstrates that unsupervised learning with surrogate losses can achieve competitive TSP performance using only 0.2\% of typical training data.} The key insight is that all existing diffusion TSP solvers use discrete-time diffusion formulations and ignore TSP's geometric structure.
+Among diffusion approaches, DIFUSCO~\citep{sun2023difusco} pioneered graph-based diffusion for TSP, DISCO~\citep{zhao2024disco} achieved 5.28× speedup through residue-constrained generation, and T2T~\citep{li2023t2t} improved quality via gradient-based search. \textcolor{blue}{Fast-T2T~\citep{li2024fastt2t} accelerates diffusion-based solutions through optimization consistency between training and testing, achieving substantial speedup with competitive solution quality.} CADO~\citep{yoon2024cado} combines enhanced DIFUSCO by combining RL fine-tuning, but requires high-quality supervised data and expensive RL fine-tuning. \textcolor{blue}{Recent work explores alternative paradigms: COExpander~\citep{ma2025coexpander} introduces adaptive expansion that interpolates between global prediction and local construction, achieving strong performance on TSP and ATSP up to 10K nodes; BQ-NCO~\citep{drakulic2023bqnco} reformulates the problem as an MDP with bisimulation quotienting for improved generalization; and UTSP~\citep{min2023utsp} demonstrates that unsupervised learning with surrogate losses can achieve competitive TSP performance using only 0.2\% of typical training data.} The key insight is that all existing diffusion TSP solvers use discrete-time diffusion formulations and ignore TSP's geometric structure.
 
 \subsection{Geometric Deep Learning and Equivariance}
 Geometric deep learning leverages symmetries to improve efficiency and generalization~\citep{bronstein2021geometric}. Equivariant neural networks ensure outputs transform consistently with symmetric inputs, reducing sample complexity~\citep{cohen2016group}. E(2)-equivariant models significantly improve TSP generalization~\citep{ouyang2021generalization}, and geometric GNNs outperform standard architectures for TSP tasks~\citep{song2025geometrically}. Theory confirms that equivariant models reduce training data requirements~\citep{brehmer2024does}. Despite this evidence, most neural network-based TSP solvers lack geometric awareness. While Sym-NCO~\citep{kim2022symnco} uses regularizer-based symmetry learning, it doesn't achieve exact equivariance. These gaps motivate our approach as the first to combine exact E(2)-equivariance with diffusion.
@@ -93,7 +93,7 @@ Geometric deep learning leverages symmetries to improve efficiency and generaliz
 \subsection{Continuous-Time Diffusion and Sampling Methods}
 Continuous-time formulations resolve fundamental limitations of discrete-time diffusion. CTMCs for discrete diffusion denoising~\citep{campbell2022continuous} enable analytical transition probabilities and flexible inference without retraining. Score-based continuous-time discrete diffusion~\citep{sun2023scorebased} provides better convergence properties and allows the use of higher-order integration methods that significantly reduce the number of neural network evaluations~\citep{song2021scorebased}. Though DiffUCO~\citep{sanokowski2024diffusion} applies continuous-time diffusion to unsupervised combinatorial optimization on graph problems (MIS, clique, max-cut), it lacks geometric considerations and does not show results on large-scale Euclidean TSP/CVRP problems. DISCO~\citep{zhao2024disco} also achieves fast inference (1-2 steps) by replacing the entire numerical integration process with an analytically solvable form through decoupled diffusion models (DDMs). This analytical solution completely bypasses the need for numerical ODE solvers but requires problem-specific residue constraints and sacrifices flexibility in the diffusion process.
 
-\textcolor{blue}{Beyond diffusion, sampling-based approaches offer alternative perspectives on combinatorial optimization. iSCO~\citep{sun2023isco} revisits MCMC sampling with expensive 2-opt moves, achieving high-quality solutions on large TSPs but at significantly longer runtimes (tens of GPU-hours). RLSA~\citep{feng2025rlsa} employs regularized Langevin dynamics with neural networks to improve exploration on graph CO problems (MIS, clique, max-cut), achieving 80\% faster convergence than simulated annealing. Variational approaches have also shown promise: VAG-CO~\citep{sanokowski2023vagco} learns Boltzmann distributions on Ising-formulated graph optimization tasks (MIS, MVC, MaxCut), while GFlowNets~\citep{zhang2023gflownet} demonstrate strong performance on graph CO through flow-based generative models. These methods target non-geometric graph problems and do not directly address Euclidean TSP/CVRP.}
+\textcolor{blue}{Beyond diffusion, sampling-based approaches offer alternative perspectives on combinatorial optimization. iSCO~\citep{sun2023isco} revisits MCMC sampling with expensive 2-opt moves, achieving high-quality solutions on large TSPs but at significantly longer runtimes (tens of GPU-hours). RLSA~\citep{feng2025rlsa} employs regularized Langevin dynamics with neural networks to improve exploration on graph CO problems (MIS, clique, max-cut), achieving 80\% faster convergence than simulated annealing. Variational approaches have also shown promise: VAG-CO~\citep{sanokowski2023vagco} learns Boltzmann distributions on Ising-formulated graph optimization tasks (MIS, MVC, MaxCut), while GFlowNets~\citep{zhang2023gflownet} demonstrates strong performance on graph CO through flow-based generative models. These methods target non-geometric graph problems and do not directly address Euclidean TSP/CVRP.}
 
 % ============ METHOD SECTION ============
 % Insert this into your main document in place of the empty Section 3
@@ -157,7 +157,7 @@ In EDISCO, we use an adaptive mixing strategy that dynamically balances between 
     p_{\text{reverse}} = w(t) \cdot p_{\text{diffusion}} + (1 - w(t)) \cdot p_{\text{predicted}}
     \label{eq:adaptive_mixing}
 \end{equation}
-where $w(t) = t$ linearly decreases from 1 to 0 as the reverse process progresses. This design is grounded in both empirical observations and theoretical principles. Empirically, early in the reverse process (large $t$), the noisy state contains little information about the target, making the diffusion dynamics essential for exploration. As $t$ decreases and the signal emerges, direct predictions become increasingly reliable and should dominate to ensure precise reconstruction. Theoretically, reverse diffusion exhibits a monotonically increasing signal-to-noise ratio (SNR) as time decreases~\citep{ho2020denoising,song2021scorebased}. The linear schedule provides the simplest monotonic interpolation that aligns with this SNR progression, consistent with standard practice in diffusion models~\citep{nichol2021improved}. For very small timesteps where $t < 0.1$ or $|\Delta t| < 0.02$, we switch entirely to deterministic transitions using the argmax of predicted probabilities. This strategy is comprehensively evaluated in Appendix~\ref{subsec:adaptivemixing}.
+where $w(t) = t$ linearly decreases from 1 to 0 as the reverse process progresses. This design is grounded in both empirical observations and theoretical principles. Empirically, early in the reverse process (large $t$), the noisy state contains little information about the target, making the diffusion dynamics essential for exploration. As $t$ decreases and the signal emerges, direct predictions become increasingly reliable and dominating to ensure precise reconstruction. Theoretically, reverse diffusion exhibits a monotonically increasing signal-to-noise ratio (SNR) as time decreases~\citep{ho2020denoising,song2021scorebased}. The linear schedule provides the simplest monotonic interpolation that aligns with this SNR progression, consistent with standard practice in diffusion models~\citep{nichol2021improved}. For very small timesteps where $t < 0.1$ or $|\Delta t| < 0.02$, we switch entirely to deterministic transitions using the argmax of predicted probabilities. This strategy is comprehensively evaluated in Appendix~\ref{subsec:adaptivemixing}.
 }
 
 \subsection{Equivariant Graph Neural Network Architecture}
@@ -301,51 +301,51 @@ CADO~\citep{yoon2024cado} & SL+RL+G+2O & 5.69 & 0.00 & 7.76 & 0.01 \\
 \cmidrule(lr){3-5} \cmidrule(lr){6-8}
 & & Length$\downarrow$ & Gap$\downarrow$ & Time & Length$\downarrow$ & Gap$\downarrow$ & Time \\
 \midrule
-Concorde*~\citep{applegate2006concorde} & Exact & 16.55 & -- & 37.66m & 23.12 & -- & 6.65h \\
-Gurobi~\citep{gurobi2023} & Exact & 16.55 & 0.00\% & 45.63h & -- & -- & -- \\
-LKH-3 (default)~\citep{helsgaun2017extension} & Heuristics & 16.55 & 0.00\% & 46.28m & 23.12 & 0.00\% & 2.57h \\
+Concorde*~\citep{applegate2006concorde} & Exact & 16.55 & -- & 37.66 m & 23.12 & -- & 6.65 h \\
+Gurobi~\citep{gurobi2023} & Exact & 16.55 & 0.00\% & 45.63 h & -- & -- & -- \\
+LKH-3 (default)~\citep{helsgaun2017extension} & Heuristics & 16.55 & 0.00\% & 46.28 m & 23.12 & 0.00\% & 2.57 h \\
 % Farthest Insertion & Heuristics & 18.30 & 10.57\% & 0s & 25.72 & 11.25\% & 0s \\
 \midrule
-AM~\citep{kool2019attention} & RL+G & 20.02 & 20.99\% & 1.51m & 31.15 & 34.75\% & 3.18m \\
-GCN~\citep{joshi2019efficient} & SL+G & 29.72 & 79.61\% & 6.67m & 48.62 & 110.29\% & 28.52m \\
-POMO+EAS-Emb~\citep{kwon2020pomo} & RL+AS+G & 19.24 & 16.25\% & 12.80h & -- & -- & -- \\
-POMO+EAS-Tab~\citep{kwon2020pomo} & RL+AS+G & 24.54 & 48.22\% & 11.61h & 49.56 & 114.36\% & 63.45h \\
-DIMES~\citep{qiu2022dimes} & RL+G & 18.93 & 14.38\% & 0.97m & 26.58 & 14.97\% & 2.08m \\
-DIMES~\citep{qiu2022dimes} & RL+AS+G & 17.81 & 7.61\% & 2.10h & 24.91 & 7.74\% & 4.49h \\
-DIFUSCO~\citep{sun2023difusco} & SL+G & 18.11 & 9.41\% & 5.70m & 25.72 & 11.24\% & 17.33m \\
-T2T~\citep{li2023t2t} & SL+G & 17.39 & 5.09\% & 4.90m & 25.17 & 8.87\% & 15.66m \\
-\textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G} & \textcolor{blue}{17.53} & \textcolor{blue}{5.94\%} & \textcolor{blue}{0.37m} & \textcolor{blue}{24.57} & \textcolor{blue}{6.29\%} & \textcolor{blue}{1.35m} \\
-\textcolor{blue}{BQ-NCO~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{16.75} & \textcolor{blue}{1.18\%} & \textcolor{blue}{2.00m} & \textcolor{blue}{23.65} & \textcolor{blue}{2.29\%} & \textcolor{blue}{6.84m} \\
-CADO~\citep{yoon2024cado} & SL+RL+G & 16.93 & 2.30\% & 8.23m & 23.89 & 3.33\% & 18.42m \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{16.87} & \textbf{1.95\%} & 2.19m & \textbf{23.78} & \textbf{2.85\%} & 6.84m \\
-\textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+G} & \textcolor{blue}{\textbf{17.01}} & \textcolor{blue}{\textbf{2.78\%}} & \textcolor{blue}{\textbf{0.23m}} & \textcolor{blue}{\textbf{24.83}} & \textcolor{blue}{\textbf{4.42\%}} & \textcolor{blue}{\textbf{0.75m}} \\
+AM~\citep{kool2019attention} & RL+G & 20.02 & 20.99\% & 1.51 m & 31.15 & 34.75\% & 3.18 m \\
+GCN~\citep{joshi2019efficient} & SL+G & 29.72 & 79.61\% & 6.67 m & 48.62 & 110.29\% & 28.52 m \\
+POMO+EAS-Emb~\citep{kwon2020pomo} & RL+AS+G & 19.24 & 16.25\% & 12.80 h & -- & -- & -- \\
+POMO+EAS-Tab~\citep{kwon2020pomo} & RL+AS+G & 24.54 & 48.22\% & 11.61 h & 49.56 & 114.36\% & 63.45 h \\
+DIMES~\citep{qiu2022dimes} & RL+G & 18.93 & 14.38\% & 0.97 m & 26.58 & 14.97\% & 2.08 m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+G & 17.81 & 7.61\% & 2.10 h & 24.91 & 7.74\% & 4.49 h \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 18.11 & 9.41\% & 5.70 m & 25.72 & 11.24\% & 17.33 m \\
+T2T~\citep{li2023t2t} & SL+G & 17.39 & 5.09\% & 4.90 m & 25.17 & 8.87\% & 15.66 m \\
+\textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G} & \textcolor{blue}{17.53} & \textcolor{blue}{5.94\%} & \textcolor{blue}{0.37 m} & \textcolor{blue}{24.57} & \textcolor{blue}{6.29\%} & \textcolor{blue}{1.35 m} \\
+\textcolor{blue}{BQ-NCO~\citep{drakulic2023bqnco}} & \textcolor{blue}{SL+G} & \textcolor{blue}{16.75} & \textcolor{blue}{1.18\%} & \textcolor{blue}{2.00 m} & \textcolor{blue}{23.65} & \textcolor{blue}{2.29\%} & \textcolor{blue}{6.84 m} \\
+CADO~\citep{yoon2024cado} & SL+RL+G & 16.93 & 2.30\% & 8.23 m & 23.89 & 3.33\% & 18.42 m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{16.87} & \textbf{1.95\%} & 2.19 m & \textbf{23.78} & \textbf{2.85\%} & 6.84 m \\
+\textcolor{blue}{\textbf{EDISCO with 5-step DEIS-2 (ours)}} & \textcolor{blue}{SL+G} & \textcolor{blue}{\textbf{17.01}} & \textcolor{blue}{\textbf{2.78\%}} & \textcolor{blue}{\textbf{0.23 m}} & \textcolor{blue}{\textbf{24.83}} & \textcolor{blue}{\textbf{4.42\%}} & \textcolor{blue}{\textbf{0.75 m}} \\
 \midrule
-DIMES~\citep{qiu2022dimes} & RL+G+2O & 17.65 & 6.62\% & 1.01m & 24.83 & 7.38\% & 2.29m \\
-DIMES~\citep{qiu2022dimes} & RL+AS+G+2O & 17.31 & 4.57\% & 2.10h & 24.33 & 5.22\% & 4.49h \\
-DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 16.81 & 1.55\% & 5.75m & 23.55 & 1.86\% & 17.52m \\
-T2T~\citep{li2023t2t} & SL+G+2O & 16.68 & 0.78\% & 4.98m & 23.41 & 1.25\% & 15.90m \\
-\textcolor{blue}{Fast T2T (Ts=5,Tg=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G+2O} & \textcolor{blue}{16.61} & \textcolor{blue}{0.39\%} & \textcolor{blue}{2.17m} & \textcolor{blue}{23.25} & \textcolor{blue}{0.58\%} & \textcolor{blue}{8.62m} \\
-CADO~\citep{yoon2024cado} & SL+RL+G+2O & 16.59 & 0.24\% & 8.35m & 23.28 & 0.69\% & 18.67m \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{16.58} & \textbf{0.18\%} & 2.35m & \textbf{23.24} & \textbf{0.52\%} & 6.97m \\
+DIMES~\citep{qiu2022dimes} & RL+G+2O & 17.65 & 6.62\% & 1.01 m & 24.83 & 7.38\% & 2.29 m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+G+2O & 17.31 & 4.57\% & 2.10 h & 24.33 & 5.22\% & 4.49 h \\
+DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 16.81 & 1.55\% & 5.75 m & 23.55 & 1.86\% & 17.52 m \\
+T2T~\citep{li2023t2t} & SL+G+2O & 16.68 & 0.78\% & 4.98 m & 23.41 & 1.25\% & 15.90 m \\
+\textcolor{blue}{Fast T2T (Ts=5,Tg=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+G+2O} & \textcolor{blue}{16.61} & \textcolor{blue}{0.39\%} & \textcolor{blue}{2.17 m} & \textcolor{blue}{23.25} & \textcolor{blue}{0.58\%} & \textcolor{blue}{8.62 m} \\
+CADO~\citep{yoon2024cado} & SL+RL+G+2O & 16.59 & 0.24\% & 8.35 m & 23.28 & 0.69\% & 18.67 m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{16.58} & \textbf{0.18\%} & 2.35 m & \textbf{23.24} & \textbf{0.52\%} & 6.97 m \\
 \midrule
-EAN~\citep{deudon2018learning} & RL+S+2O & 23.75 & 43.57\% & 57.76m & 47.73 & 106.46\% & 5.39h \\
-AM~\citep{kool2019attention} & RL+BS & 19.53 & 18.03\% & 21.99m & 29.90 & 29.23\% & 1.64h \\
-GCN~\citep{joshi2019efficient} & SL+BS & 30.37 & 83.55\% & 38.02m & 51.26 & 121.73\% & 51.67m \\
-DIMES~\citep{qiu2022dimes} & RL+S & 18.84 & 13.84\% & 1.06m & 26.36 & 14.01\% & 2.38m \\
-DIMES~\citep{qiu2022dimes} & RL+AS+S & 17.80 & 7.55\% & 2.11h & 24.89 & 7.70\% & 4.53h \\
-DIFUSCO~\citep{sun2023difusco} & SL+S & 17.48 & 5.65\% & 19.02m & 25.11 & 8.61\% & 59.18m \\
-T2T~\citep{li2023t2t} & SL+S & 17.02 & 2.84\% & 15.98m & 24.72 & 6.92\% & 53.92m \\
-\textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+S} & \textcolor{blue}{17.02} & \textcolor{blue}{2.85\%} & \textcolor{blue}{1.12m} & \textcolor{blue}{24.07} & \textcolor{blue}{4.10\%} & \textcolor{blue}{4.65m} \\
-CADO~\citep{yoon2024cado} & SL+RL+S & 16.76 & 1.27\% & 26.89m & 23.67 & 2.38\% & 61.23m \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{16.72} & \textbf{1.05\%} & 7.82m & \textbf{23.57} & \textbf{1.95\%} & 23.27m \\
+EAN~\citep{deudon2018learning} & RL+S+2O & 23.75 & 43.57\% & 57.76 m & 47.73 & 106.46\% & 5.39 h \\
+AM~\citep{kool2019attention} & RL+BS & 19.53 & 18.03\% & 21.99 m & 29.90 & 29.23\% & 1.64 h \\
+GCN~\citep{joshi2019efficient} & SL+BS & 30.37 & 83.55\% & 38.02 m & 51.26 & 121.73\% & 51.67 m \\
+DIMES~\citep{qiu2022dimes} & RL+S & 18.84 & 13.84\% & 1.06 m & 26.36 & 14.01\% & 2.38 m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+S & 17.80 & 7.55\% & 2.11 h & 24.89 & 7.70\% & 4.53 h \\
+DIFUSCO~\citep{sun2023difusco} & SL+S & 17.48 & 5.65\% & 19.02 m & 25.11 & 8.61\% & 59.18 m \\
+T2T~\citep{li2023t2t} & SL+S & 17.02 & 2.84\% & 15.98 m & 24.72 & 6.92\% & 53.92 m \\
+\textcolor{blue}{Fast T2T (Ts=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+S} & \textcolor{blue}{17.02} & \textcolor{blue}{2.85\%} & \textcolor{blue}{1.12 m} & \textcolor{blue}{24.07} & \textcolor{blue}{4.10\%} & \textcolor{blue}{4.65 m} \\
+CADO~\citep{yoon2024cado} & SL+RL+S & 16.76 & 1.27\% & 26.89 m & 23.67 & 2.38\% & 61.23 m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{16.72} & \textbf{1.05\%} & 7.82 m & \textbf{23.57} & \textbf{1.95\%} & 23.27 m \\
 \midrule
-DIMES~\citep{qiu2022dimes} & RL+S+2O & 17.64 & 6.56\% & 1.10m & 24.81 & 7.29\% & 2.86m \\
-DIMES~\citep{qiu2022dimes} & RL+AS+S+2O & 17.29 & 4.48\% & 2.11h & 24.32 & 5.17\% & 4.53h \\
-DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 16.69 & 0.83\% & 19.05m & 23.42 & 1.30\% & 59.53m \\
-T2T~\citep{li2023t2t} & SL+S+2O & 16.61 & 0.37\% & 16.03m & 23.30 & 0.78\% & 54.67m \\
-\textcolor{blue}{Fast T2T (Ts=5,Tg=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+S+2O} & \textcolor{blue}{16.58} & \textcolor{blue}{0.21\%} & \textcolor{blue}{6.85m} & \textcolor{blue}{23.22} & \textcolor{blue}{0.42\%} & \textcolor{blue}{18.28m} \\
-CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01m & 23.19 & 0.30\% & 61.48m \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{16.56} & \textbf{0.08\%} & 8.03m & \textbf{23.17} & \textbf{0.22\%} & 23.48m \\
+DIMES~\citep{qiu2022dimes} & RL+S+2O & 17.64 & 6.56\% & 1.10 m & 24.81 & 7.29\% & 2.86 m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+S+2O & 17.29 & 4.48\% & 2.11 h & 24.32 & 5.17\% & 4.53 h \\
+DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 16.69 & 0.83\% & 19.05 m & 23.42 & 1.30\% & 59.53 m \\
+T2T~\citep{li2023t2t} & SL+S+2O & 16.61 & 0.37\% & 16.03 m & 23.30 & 0.78\% & 54.67 m \\
+\textcolor{blue}{Fast T2T (Ts=5,Tg=5)~\citep{li2024fastt2t}} & \textcolor{blue}{SL+S+2O} & \textcolor{blue}{16.58} & \textcolor{blue}{0.21\%} & \textcolor{blue}{6.85 m} & \textcolor{blue}{23.22} & \textcolor{blue}{0.42\%} & \textcolor{blue}{18.28 m} \\
+CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01 m & 23.19 & 0.30\% & 61.48 m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{16.56} & \textbf{0.08\%} & 8.03 m & \textbf{23.17} & \textbf{0.22\%} & 23.48 m \\
 \bottomrule
 \end{tabular}%
 }
@@ -356,7 +356,7 @@ CADO~\citep{yoon2024cado} & SL+RL+S+2O & 16.57 & 0.12\% & 27.01m & 23.19 & 0.30\
 \textcolor{blue}{This section aims to show the main results of TSP. The extension to ESTP and CVRP can be found in Appendix~\ref{app:steiner} and Appendix~\ref{app:cvrp}.} For all EDISCO results shown in this section, we use the PNDM solver~\citep{liu2022pndm} with 50 steps, which achieves the best solution quality based on our extensive evaluation in Appendix~\ref{subsec:solver_eval}. 
 
 \paragraph{TSP-50/100 Results}
-The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-optimal performance with 0.01\% gap on TSP-50 and 0.04\% on TSP-100, substantially outperforming DIFUSCO (0.48\% and 1.01\%), \textcolor{blue}{Fast-T2T (0.02\% and 0.07\%), BQ-NCO (-- and 0.35\%),} and T2T (0.04\% and 0.18\%). Unlike CADO, which requires both supervised and reinforcement learning, our purely supervised approach reaches comparable accuracy. \textcolor{blue}{For applications requiring ultra-fast inference, EDISCO with 5-step DEIS-2 solver achieves 0.02\% and 0.06\% gaps on TSP-50 and TSP-100, providing competitive quality with significantly reduced computation.} With 2-opt post-processing, EDISCO achieves optimal solutions (0.00\% gap) on TSP-50 and 0.01\% gap on TSP-100, matching the performance of \textcolor{blue}{Fast-T2T} and CADO while demonstrating that the equivariant architecture generates high-quality initial tours.
+The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-optimal performance with 0.01\% gap on TSP-50 and 0.04\% on TSP-100, substantially outperforming DIFUSCO (0.48\% and 1.01\%), \textcolor{blue}{Fast-T2T (0.02\% and 0.07\%), BQ-NCO (-- and 0.35\%),} and T2T (0.04\% and 0.18\%). Unlike CADO, which requires both supervised and reinforcement learning, our purely supervised approach reaches comparable accuracy. \textcolor{blue}{For applications requiring ultra-fast inference, EDISCO with a 5-step DEIS-2 solver achieves 0.02\% and 0.06\% gaps on TSP-50 and TSP-100, respectively, showing competitive performance with significantly reduced computation.} With 2-opt post-processing, EDISCO achieves optimal solutions (0.00\% gap) on TSP-50 and 0.01\% gap on TSP-100, matching the performance of \textcolor{blue}{Fast-T2T} and CADO while demonstrating that the equivariant architecture generates high-quality initial tours.
 
 \begin{wrapfigure}{l}{0.4\textwidth}
 \centering
@@ -369,7 +369,7 @@ The results are shown in Table~\ref{tab:small_results}. EDISCO achieves near-opt
 \end{wrapfigure}
 
 \paragraph{TSP-500/1000 Results}
-Table~\ref{tab:large_results} presents results on larger-scale TSP instances. EDISCO achieves state-of-the-art performance across all decoding strategies. Using greedy decoding, EDISCO achieves gaps of 1.95\% and 2.85\% on TSP-500 and TSP-1000, outperforming DIFUSCO (9.41\%, 11.24\%), \textcolor{blue}{Fast-T2T (5.94\%, 6.29\%), BQ-NCO (1.18\%, 2.29\%),} and T2T (5.09\%, 8.87\%). \textcolor{blue}{BQ-NCO, which uses an MDP formulation with imitation learning, achieves competitive generalization but is still outperformed by EDISCO's diffusion-based approach.} \textcolor{blue}{The continuous-time formulation enables flexible speed-quality trade-offs: EDISCO with 5-step DEIS-2 solver achieves 2.78\% and 4.42\% gaps in only 0.23m and 0.75m—approximately 9.5× and 9.1× faster than PNDM-50 while maintaining competitive quality, making it ideal for time-critical applications.} With 2-opt post-processing, EDISCO achieves near-optimal solutions with gaps of 0.18\% and 0.52\%, outperforming \textcolor{blue}{Fast-T2T (0.39\%, 0.58\%)} and the previous best CADO (0.24\%, 0.69\%) while being 3.6× faster on TSP-500 and 2.7× faster on TSP-1000. The efficiency gain is particularly notable in sampling mode, where EDISCO requires only 7.82m and 23.27m compared to DIFUSCO's 19.02m and 59.18m, demonstrating that the use of advanced numerical solvers significantly accelerates inference without compromising solution quality.
+Table~\ref{tab:large_results} presents results on larger-scale TSP instances. EDISCO achieves state-of-the-art performance across all decoding strategies. Using greedy decoding, EDISCO achieves gaps of 1.95\% and 2.85\% on TSP-500 and TSP-1000, outperforming DIFUSCO (9.41\%, 11.24\%), \textcolor{blue}{Fast-T2T (5.94\%, 6.29\%), BQ-NCO (1.18\%, 2.29\%),} and T2T (5.09\%, 8.87\%). \textcolor{blue}{BQ-NCO, which uses an MDP formulation with imitation learning, achieves competitive generalization but is still outperformed by EDISCO's diffusion-based approach.} \textcolor{blue}{The continuous-time formulation enables flexible speed-quality trade-offs: EDISCO with a 5-step DEIS-2 solver achieves 2.78\% and 4.42\% gaps in only 0.23 minutes and 0.75 minutes, approximately 9.5× and 9.1× faster than PNDM-50 while maintaining competitive quality, making it ideal for time-critical applications.} With 2-opt post-processing, EDISCO achieves near-optimal solutions with gaps of 0.18\% and 0.52\%, outperforming \textcolor{blue}{Fast-T2T (0.39\%, 0.58\%)} and the previous best CADO (0.24\%, 0.69\%) while being 3.6× faster on TSP-500 and 2.7× faster on TSP-1000. The efficiency gain is particularly notable in sampling mode, where EDISCO requires only 7.82m and 23.27m compared to DIFUSCO's 19.02m and 59.18m, demonstrating that the use of advanced numerical solvers significantly accelerates inference without compromising solution quality.
 
 \paragraph{Generalization} 
 
@@ -397,7 +397,7 @@ The right panel of Figure~\ref{fig:data_experiments} examines model performance 
 \begin{table}[h]
 \color{blue}
 \centering
-\caption{Ablation study on TSP-500 and TSP-1000. The table evaluates all combinations of removing EDISCO's three key components. The baseline is equivalent to Vanilla DIFUSCO.}
+\caption{Ablation study on TSP-500 and TSP-1000. The table shows the results of evaluating all combinations of removing EDISCO's three key components. The baseline is equivalent to Vanilla DIFUSCO.}
 \label{tab:component_ablation}
 \small
 \adjustbox{max width=\textwidth}{%
@@ -407,25 +407,25 @@ The right panel of Figure~\ref{fig:data_experiments} examines model performance 
 \cmidrule(lr){2-4} \cmidrule(lr){5-7}
 & Length $\downarrow$ & Gap\% $\downarrow$ & Time & Length $\downarrow$ & Gap\% $\downarrow$ & Time & \\
 \midrule
-\textbf{EDISCO (Full)} & \textbf{16.87} & \textbf{1.95} & \textbf{2.19m} & \textbf{23.78} & \textbf{2.85} & \textbf{6.84m} & 35 \\
+\textbf{EDISCO (Full)} & \textbf{16.87} & \textbf{1.95} & \textbf{2.19 m} & \textbf{23.78} & \textbf{2.85} & \textbf{6.84 m} & 35 \\
 \midrule
-w/o Mix Strategy & 16.95 & 2.44 & 2.18m & 23.91 & 3.41 & 6.85m & 38 \\
-w/o Continuous-Time & 17.02 & 2.86 & 4.43m & 24.11 & 4.28 & 15.58m & 42 \\
-w/o EGNN & 17.49 & 5.71 & 2.31m & 24.85 & 7.49 & 7.15m & 51 \\
+w/o Mix Strategy & 16.95 & 2.44 & 2.18 m & 23.91 & 3.41 & 6.85 m & 38 \\
+w/o Continuous-Time & 17.02 & 2.86 & 4.43 m & 24.11 & 4.28 & 15.58 m & 42 \\
+w/o EGNN & 17.49 & 5.71 & 2.31 m & 24.85 & 7.49 & 7.15 m & 51 \\
 \midrule
-EGNN Only & 17.14 & 3.58 & 4.52m & 24.29 & 5.06 & 16.12m & 48 \\
-Continuous Only & 17.72 & 7.09 & 2.45m & 25.26 & 9.27 & 7.42m & 58 \\
-Mix Only & 17.61 & 6.42 & 5.42m & 25.08 & 8.52 & 16.86m & 55 \\
+EGNN Only & 17.14 & 3.58 & 4.52 m & 24.29 & 5.06 & 16.12 m & 48 \\
+Continuous Only & 17.72 & 7.09 & 2.45 m & 25.26 & 9.27 & 7.42 m & 58 \\
+Mix Only & 17.61 & 6.42 & 5.42 m & 25.08 & 8.52 & 16.86 m & 55 \\
 \midrule
-\textbf{Vanilla DIFUSCO} & 18.11 & 9.41 & 5.70m & 25.72 & 11.24 & 17.33m & 61 \\
+\textbf{Vanilla DIFUSCO} & 18.11 & 9.41 & 5.70 m & 25.72 & 11.24 & 17.33 m & 61 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-Table~\ref{tab:component_ablation} systematically evaluates each component's contribution. EGNN provides the largest individual impact: removing it degrades performance from 1.95\% to 5.71\% on TSP-500 (2.85\% to 7.49\% on TSP-1000) and requires 16 additional training epochs. Continuous-time diffusion doubles inference speed (2.19m vs 4.43m on TSP-500) while improving gaps by 0.91\% \& 1.43\%. Adaptive mixing contributes 0.49\% \& 0.56\% improvements.
+Table~\ref{tab:component_ablation} shows the results of systematically evaluating each component's contribution. EGNN provides the largest individual impact: removing it degrades performance from 1.95\% to 5.71\% on TSP-500 (2.85\% to 7.49\% on TSP-1000) and requires 16 additional training epochs. Continuous-time diffusion doubles inference speed (2.19 minutes vs 4.43 minutes on TSP-500) while improving gaps by 0.91\% and 1.43\%. Adaptive mixing contributes 0.49\% and 0.56\% improvements.
 
-The \textbf{EGNN only} case achieves 3.58\% \& 5.06\% gaps, demonstrating 2.63$\times$ \& 2.22$\times$ improvements over vanilla DIFUSCO (9.41\% \& 11.24\%) and isolating EGNN's architectural contribution. Variants without EGNN perform substantially worse (6.42-7.09\% gaps), confirming equivariance as the core innovation.
+The \textbf{EGNN only} case achieves 3.58\% and 5.06\% gaps, demonstrating 2.63$\times$ and 2.22$\times$ improvements over vanilla DIFUSCO (9.41\% and 11.24\%) and isolating EGNN's architectural contribution. Variants without EGNN perform substantially worse (6.42-7.09\% gaps), confirming equivariance as the core innovation and contribution.
 }
 
 % ============ DISCUSSION AND CONCLUSION SECTION ============
@@ -683,19 +683,19 @@ We evaluate EDISCO on Steiner Tree benchmarks with 10, 20, and 50 terminals, fol
 \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
 & & Length$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Length$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Length$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ \\
 \midrule
-GeoSteiner*~\citep{brazil2015geosteiner} & Exact & 2.62 & 0.00\% & 24s & 3.63 & 0.00\% & 2.8m & 5.78 & 0.00\% & 18.5m \\
+GeoSteiner*~\citep{brazil2015geosteiner} & Exact & 2.62 & 0.00\% & 24 s & 3.63 & 0.00\% & 2.8 m & 5.78 & 0.00\% & 18.5 m \\
 \midrule
-MST (Upper Bound) & Heuristic & 2.84 & 8.40\% & $<$1s & 3.89 & 7.16\% & $<$1s & 6.15 & 6.40\% & $<$1s \\
-Steiner Insertion~\citep{kahng1992steiner} & Heuristic & 2.71 & 3.44\% & $<$1s & 3.76 & 3.58\% & $<$1s & 5.97 & 3.29\% & 1s \\
+MST (Upper Bound) & Heuristic & 2.84 & 8.40\% & $<$1 s & 3.89 & 7.16\% & $<$1 s & 6.15 & 6.40\% & $<$1 s \\
+Steiner Insertion~\citep{kahng1992steiner} & Heuristic & 2.71 & 3.44\% & $<$1 s & 3.76 & 3.58\% & $<$1 s & 5.97 & 3.29\% & 1 s \\
 \midrule
 \multicolumn{11}{l}{\textit{Learning-Based Greedy Decoding}} \\
 \midrule
-Deep-Steiner~\citep{wang2022deep} & RL+G & 2.73 & 4.20\% & 2s & 3.81 & 4.96\% & 3s & 6.08 & 5.19\% & 7s \\
-DIFUSCO~\citep{sun2023difusco} & SL+G & 2.77 & 5.73\% & 2s & 3.81 & 4.96\% & 3s & 6.05 & 4.67\% & 7s \\
-T2T~\citep{li2023t2t} & SL+G & 2.73 & 4.20\% & 2s & 3.76 & 3.58\% & 3s & 5.97 & 3.29\% & 8s \\
-FastT2T~\citep{li2024fastt2t} & SL+G & 2.68 & 2.29\% & 1s & 3.71 & 2.20\% & 2s & 5.91 & 2.25\% & 4s \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{2.66} & \textbf{1.53\%} & 2s & \textbf{3.68} & \textbf{1.38\%} & 3s & \textbf{5.87} & \textbf{1.56\%} & 8s \\
-\textbf{EDISCO with 5-step DEIS-2 (ours)} & SL+G & 2.69 & 2.67\% & \textbf{0.15s} & 3.72 & 2.48\% & \textbf{0.35s} & 5.93 & 2.60\% & \textbf{0.7s} \\
+Deep-Steiner~\citep{wang2022deep} & RL+G & 2.73 & 4.20\% & 2 s & 3.81 & 4.96\% & 3 s & 6.08 & 5.19\% & 7 s \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 2.77 & 5.73\% & 2 s & 3.81 & 4.96\% & 3 s & 6.05 & 4.67\% & 7 s \\
+T2T~\citep{li2023t2t} & SL+G & 2.73 & 4.20\% & 2 s & 3.76 & 3.58\% & 3 s & 5.97 & 3.29\% & 8 s \\
+FastT2T~\citep{li2024fastt2t} & SL+G & 2.68 & 2.29\% & 1 s & 3.71 & 2.20\% & 2 s & 5.91 & 2.25\% & 4 s \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{2.66} & \textbf{1.53\%} & 2 s & \textbf{3.68} & \textbf{1.38\%} & 3 s & \textbf{5.87} & \textbf{1.56\%} & 8 s \\
+\textbf{EDISCO with 5-step DEIS-2 (ours)} & SL+G & 2.69 & 2.67\% & \textbf{0.15 s} & 3.72 & 2.48\% & \textbf{0.35 s} & 5.93 & 2.60\% & \textbf{0.7 s} \\
 \bottomrule
 \end{tabular}%
 }
@@ -758,24 +758,24 @@ We evaluate EDISCO on standard CVRP benchmarks with 20, 50, and 100 customers, f
 & & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ & Cost$\downarrow$ & Gap$\downarrow$ & Time$\downarrow$ \\
 \midrule
 Gurobi~\citep{gurobi2023} & Exact & 6.10 & 0.00\% & -- & -- & -- & -- & -- & -- & -- \\
-\textbf{HGS}~\citep{vidal2012hybrid} & \textbf{Heuristic} & \textbf{6.10} & \textbf{0.00\%} & \textbf{1h} & \textbf{10.38} & \textbf{0.00\%} & \textbf{3h} & \textbf{15.65} & \textbf{0.00\%} & \textbf{5h} \\
-LKH-3~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 2h & 10.38 & 0.00\% & 7h & 15.65 & 0.00\% & 12h \\
+\textbf{HGS}~\citep{vidal2012hybrid} & \textbf{Heuristic} & \textbf{6.10} & \textbf{0.00\%} & \textbf{1 h} & \textbf{10.38} & \textbf{0.00\%} & \textbf{3 h} & \textbf{15.65} & \textbf{0.00\%} & \textbf{5 h} \\
+LKH-3~\citep{helsgaun2017extension} & Heuristic & 6.14 & 0.58\% & 2 h & 10.38 & 0.00\% & 7 h & 15.65 & 0.00\% & 12 h \\
 \midrule
 \multicolumn{11}{l}{\textit{Neural Methods - Greedy Decoding}} \\
 \midrule
-AM~\citep{kool2019attention} & RL+G & 6.40 & 4.97\% & $<$1s & 10.98 & 5.86\% & 1s & 16.80 & 7.34\% & 3s \\
-POMO~\citep{kwon2020pomo} & RL+G & 6.35 & 3.72\% & $<$1s & 10.74 & 3.52\% & 1s & 16.13 & 3.09\% & 3s \\
-Sym-NCO~\citep{kim2022symnco} & RL+G & -- & -- & -- & -- & -- & -- & \textbf{16.10} & \textbf{2.88\%} & 3s \\
-\textbf{EDISCO with 50-step PNDM50 (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & 1s & \textbf{10.63} & \textbf{2.46\%} & 2s & 16.15 & 3.17\% & 5s \\
-\textbf{EDISCO-DEIS2 (ours)} & SL+G & 6.23 & 2.01\% & \textbf{0.1s} & 10.66 & 3.51\% & \textbf{0.2s} & 16.22 & 4.53\% & \textbf{0.5s} \\
+AM~\citep{kool2019attention} & RL+G & 6.40 & 4.97\% & $<$1 s & 10.98 & 5.86\% & 1 s & 16.80 & 7.34\% & 3 s \\
+POMO~\citep{kwon2020pomo} & RL+G & 6.35 & 3.72\% & $<$1 s & 10.74 & 3.52\% & 1 s & 16.13 & 3.09\% & 3 s \\
+Sym-NCO~\citep{kim2022symnco} & RL+G & -- & -- & -- & -- & -- & -- & \textbf{16.10} & \textbf{2.88\%} & 3 s \\
+\textbf{EDISCO with 50-step PNDM50 (ours)} & SL+G & \textbf{6.21} & \textbf{1.41\%} & 1 s & \textbf{10.63} & \textbf{2.46\%} & 2 s & 16.15 & 3.17\% & 5 s \\
+\textbf{EDISCO-DEIS2 (ours)} & SL+G & 6.23 & 2.01\% & \textbf{0.1 s} & 10.66 & 3.51\% & \textbf{0.2 s} & 16.22 & 4.53\% & \textbf{0.5 s} \\
 \midrule
 \multicolumn{11}{l}{\textit{Neural Methods - Sampling/Augmentation}} \\
 \midrule
-AM~\citep{kool2019attention} & RL+S (1280) & 6.25 & 2.49\% & 3m & 10.62 & 2.40\% & 7m & 16.23 & 3.72\% & 30m \\
-POMO (no aug)~\citep{kwon2020pomo} & RL+G & 6.17 & 0.82\% & 1s & 10.49 & 1.14\% & 4s & 15.83 & 1.13\% & 19s \\
-POMO (×8 aug)~\citep{kwon2020pomo} & RL+G & \textbf{6.14} & \textbf{0.21}\% & 5s & 10.42 & 0.45\% & 26s & 15.73 & 0.51\% & 2m \\
-Sym-NCO~\citep{kim2022symnco} & RL+S (100) & -- & -- & -- & -- & -- & -- & 15.87 & 1.40\% & 16s \\
-\textbf{EDISCO with 50-step PNDM50 (ours)} & SL+S (16) & 6.15 & 0.33\% & 4s & \textbf{10.41} & \textbf{0.35\%} & 7s & \textbf{15.71} & \textbf{0.38\%} & 18s \\
+AM~\citep{kool2019attention} & RL+S (1280) & 6.25 & 2.49\% & 3 m & 10.62 & 2.40\% & 7 m & 16.23 & 3.72\% & 30 m \\
+POMO (no aug)~\citep{kwon2020pomo} & RL+G & 6.17 & 0.82\% & 1 s & 10.49 & 1.14\% & 4 s & 15.83 & 1.13\% & 19 s \\
+POMO (×8 aug)~\citep{kwon2020pomo} & RL+G & \textbf{6.14} & \textbf{0.21}\% & 5 s & 10.42 & 0.45\% & 26 s & 15.73 & 0.51\% & 2 m \\
+Sym-NCO~\citep{kim2022symnco} & RL+S (100) & -- & -- & -- & -- & -- & -- & 15.87 & 1.40\% & 16 s \\
+\textbf{EDISCO with 50-step PNDM50 (ours)} & SL+S (16) & 6.15 & 0.33\% & 4 s & \textbf{10.41} & \textbf{0.35\%} & 7 s & \textbf{15.71} & \textbf{0.38\%} & 18 s \\
 \bottomrule
 \end{tabular}%
 }
@@ -944,7 +944,7 @@ The application of neural networks to combinatorial optimization began with Poin
 
 \subsection{Alternative Architectures and Scaling Approaches}
 \label{subsec:alt_architectures}
-Beyond diffusion-based methods, several innovative architectures address the challenge of scaling to large TSP instances. LEHD (Light Encoder Heavy Decoder)~\citep{fu2024lehd} achieves remarkable scalability to instances with up to 10,000 cities by separating encoding and decoding complexity—training on small instances but generalizing through architectural design rather than data. Bisimulation quotienting (BQ-NCO)~\citep{drakulic2023bqnco} takes a fundamentally different approach by reformulating the MDP to group behaviorally similar states, achieving strong zero-shot generalization. Hierarchical approaches like GLOP~\citep{corsini2024glop} combine global partition with local construction for real-time routing, while the hierarchical neural constructive solver~\citep{goh2024hierarchical} builds solutions through multiple resolution levels. \textcolor{blue}{Emerging directions include problem unification and multi-task learning: UniCO~\citep{pan2025unico} proposes reducing various COPs (ATSP, Hamiltonian cycle, SAT) to a matrix-encoded general TSP formulation, while GOAL~\citep{drakulic2025goal} introduces the first generalist model that jointly solves multiple COPs (routing, scheduling, graph problems) using task-specific adapters, achieving competitive performance across diverse problem families.} These methods demonstrate that architectural innovations can sometimes overcome the data requirements that limit standard approaches.
+Beyond diffusion-based methods, several innovative architectures address the challenge of scaling to large TSP instances. LEHD (Light Encoder Heavy Decoder)~\citep{fu2024lehd} achieves remarkable scalability to instances with up to 10,000 cities by separating encoding and decoding complexity—training on small instances but generalizing through architectural design rather than data. Bisimulation quotienting (BQ-NCO)~\citep{drakulic2023bqnco} takes a fundamentally different approach by reformulating the MDP to group behaviorally similar states, achieving strong zero-shot generalization. Hierarchical approaches like GLOP~\citep{ye2024glop} combine global partition with local construction for real-time routing, while the hierarchical neural constructive solver~\citep{goh2024hierarchical} builds solutions through multiple resolution levels. \textcolor{blue}{Emerging directions include problem unification and multi-task learning: UniCO~\citep{pan2025unico} proposes reducing various COPs (ATSP, Hamiltonian cycle, SAT) to a matrix-encoded general TSP formulation, while GOAL~\citep{drakulic2025goal} introduces the first generalist model that jointly solves multiple COPs (routing, scheduling, graph problems) using task-specific adapters, achieving competitive performance across diverse problem families.} These methods demonstrate that architectural innovations can sometimes overcome the data requirements that limit standard approaches.
 
 \subsection{Discrete Diffusion Foundations and Variants}
 \label{subsec:discrete_diffusion} 
@@ -1165,32 +1165,32 @@ The continuous-time formulation provides remarkable flexibility in trading compu
 \toprule
 \textbf{Algorithm} & \textbf{Type} & \textbf{Length$\downarrow$} & \textbf{Gap$\downarrow$} & \textbf{Time} \\
 \midrule
-LKH-3 (default)*~\citep{helsgaun2017extension} & Heuristics & 71.77 & -- & 8.8h \\
-LKH-3 (less trials)~\citep{helsgaun2017extension} & Heuristics & 71.79 & 0.03\% & 51.27m \\
-2-opt~\citep{lin1973effective} & Heuristics & 91.16 & 27.02\% & 28.49m \\
-Farthest Insertion & Heuristics & 80.59 & 12.36\% & 13.25m \\
+LKH-3 (default)*~\citep{helsgaun2017extension} & Heuristics & 71.77 & -- & 8.8 h \\
+LKH-3 (less trials)~\citep{helsgaun2017extension} & Heuristics & 71.79 & 0.03\% & 51.27 m \\
+2-opt~\citep{lin1973effective} & Heuristics & 91.16 & 27.02\% & 28.49 m \\
+Farthest Insertion & Heuristics & 80.59 & 12.36\% & 13.25 m \\
 \midrule
-AM~\citep{kool2019attention} & RL+G & 141.51 & 97.17\% & 7.68m \\
-GLOP~\citep{ye2024glop} & RL+G & 75.29 & 4.90\% & 1.90m \\
-DIMES~\citep{qiu2022dimes} & RL+AS+G & 80.45 & 12.09\% & 3.07h \\
-DIFUSCO~\citep{sun2023difusco} & SL+G & 78.35 & 8.95\% & 28.51m \\
-T2T~\citep{li2023t2t} & SL+G & 73.87 & 2.92\% & 1.52h \\
-DISCO~\citep{zhao2024disco} & SL+G & 73.85 & 2.90\% & 1.52h \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{73.19} & \textbf{1.98\%} & 12.18m \\
+AM~\citep{kool2019attention} & RL+G & 141.51 & 97.17\% & 7.68 m \\
+GLOP~\citep{ye2024glop} & RL+G & 75.29 & 4.90\% & 1.90 m \\
+DIMES~\citep{qiu2022dimes} & RL+AS+G & 80.45 & 12.09\% & 3.07 h \\
+DIFUSCO~\citep{sun2023difusco} & SL+G & 78.35 & 8.95\% & 28.51 m \\
+T2T~\citep{li2023t2t} & SL+G & 73.87 & 2.92\% & 1.52 h \\
+DISCO~\citep{zhao2024disco} & SL+G & 73.85 & 2.90\% & 1.52 h \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G & \textbf{73.19} & \textbf{1.98\%} & 12.18 m \\
 \midrule
-DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 73.99 & 3.10\% & 35.38m \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{72.87} & \textbf{1.53\%} & 12.72m \\
+DIFUSCO~\citep{sun2023difusco} & SL+G+2O & 73.99 & 3.10\% & 35.38 m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+G+2O & \textbf{72.87} & \textbf{1.53\%} & 12.72 m \\
 \midrule
-AM~\citep{kool2019attention} & RL+BS & 129.40 & 80.28\% & 1.81h \\
-GLOP~\citep{ye2024glop} & RL+S & 75.27 & 4.88\% & 5.96m \\
-DIFUSCO~\citep{sun2023difusco} & SL+S & 95.52 & 33.09\% & 6.59h \\
-T2T~\citep{li2023t2t} & SL+S & 73.81 & 2.84\% & 2.47h \\
-DISCO~\citep{zhao2024disco} & SL+S & 73.81 & 2.84\% & 48.77m \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{72.77} & \textbf{1.39\%} & 38.92m \\
+AM~\citep{kool2019attention} & RL+BS & 129.40 & 80.28\% & 1.81 h \\
+GLOP~\citep{ye2024glop} & RL+S & 75.27 & 4.88\% & 5.96 m \\
+DIFUSCO~\citep{sun2023difusco} & SL+S & 95.52 & 33.09\% & 6.59 h \\
+T2T~\citep{li2023t2t} & SL+S & 73.81 & 2.84\% & 2.47 h \\
+DISCO~\citep{zhao2024disco} & SL+S & 73.81 & 2.84\% & 48.77 m \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S & \textbf{72.77} & \textbf{1.39\%} & 38.92 m \\
 \midrule
-DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 74.66 & 4.03\% & 6.67h \\
-DISCO~\citep{zhao2024disco} & SL+GS+MCTS & 73.69 & 2.68\% & 2.1h \\
-\textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{72.63} & \textbf{1.20\%} & 39.28m \\
+DIFUSCO~\citep{sun2023difusco} & SL+S+2O & 74.66 & 4.03\% & 6.67 h \\
+DISCO~\citep{zhao2024disco} & SL+GS+MCTS & 73.69 & 2.68\% & 2.1 h \\
+\textbf{EDISCO with 50-step PNDM (ours)} & SL+S+2O & \textbf{72.63} & \textbf{1.20\%} & 39.28 m \\
 \bottomrule
 \end{tabular}%
 % }
