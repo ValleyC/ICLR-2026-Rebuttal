@@ -470,7 +470,7 @@ The source code and instructions for reproducing our experiments are available a
 
 {\color{blue}\noindent \textbf{B. Extension to Euclidean Steiner Tree Problem} \dotfill \pageref{app:steiner}}
 
-\noindent \textbf{C. Extension to Capacitated Vehicle Routing Problem (CVRP)} \dotfill \pageref{app:cvrp}
+\noindent \textbf{C. Extension to Capacitated Vehicle Routing Problem} \dotfill \pageref{app:cvrp}
 
 \noindent \textbf{D. Proofs} \dotfill \pageref{sec:appendix:proofs}
 \begin{quote}
@@ -722,7 +722,7 @@ The 5-step DEIS-2 configuration provides ultra-fast inference (0.15s, 0.35s, 0.7
 }
 
 {\color{blue}
-\section{Extension to Capacitated Vehicle Routing Problem (CVRP)}
+\section{Extension to Capacitated Vehicle Routing Problem}
 \label{app:cvrp}
 
 \paragraph{Problem Formulation and Equivariance Preservation}
@@ -1084,12 +1084,6 @@ We train EDISCO using the AdamW optimizer with a learning rate of $2 \times 10^{
 % Additional Results
 % ============================================================================
 
-\section{Additional Results}
-\label{sec:additional_results}
-
-\subsection{Solver Evaluation on TSP-500}
-\label{subsec:solver_eval}
-
 \begin{table}[h]
 \centering
 \caption{Comprehensive solver evaluation on TSP-500. G: Greedy Decoding. Best gap: PNDM with 50 steps (1.95\%). Fastest $<$3\% gap: DEIS-2 with 5 steps (2.78\%, 0.23m).}
@@ -1151,6 +1145,13 @@ T2T~\citep{li2023t2t} & SL+G & 20 & $\sim$60 & 17.39 & 5.09\% & 4.90 \\
 }
 \end{table}
 \vspace{-0.5cm}
+
+\section{Additional Results}
+\label{sec:additional_results}
+
+\subsection{Solver Evaluation on TSP-500}
+\label{subsec:solver_eval}
+
 To demonstrate the flexibility and efficiency of continuous-time diffusion, we conduct a comprehensive evaluation of various numerical solvers on TSP-500. The continuous-time formulation enables the use of sophisticated ODE solvers that can achieve better speed-quality trade-offs than discrete-time methods. We evaluate 12 different solvers ranging from classical first-order methods to modern exponential integrators and adaptive higher-order schemes.
 
 Table~\ref{tab:solver_tsp500_complete} presents the results across different solver families. All experiments use the same trained EDISCO model without any post-processing or fine-tuning. Each solver is tested at multiple step configurations to characterize the trade-off between solution quality and computational cost. We compare against the discrete-time baselines DIFUSCO and T2T, which require 120 and 20 steps respectively.
